@@ -77,7 +77,12 @@ end
 
 function Window:open()
 	self.Instance.Visible = true
-	self.Instance.Size = UDim2.fromScale(self.OriginalSize.X.Scale * 0.96, self.OriginalSize.Y.Scale * 0.96)
+	self.Instance.Size = UDim2.new(
+		self.OriginalSize.X.Scale * 0.96,
+		self.OriginalSize.X.Offset * 0.96,
+		self.OriginalSize.Y.Scale * 0.96,
+		self.OriginalSize.Y.Offset * 0.96
+	)
 	self.Runtime:animate(self.Instance, {Size = self.OriginalSize}, 0.22, Enum.EasingStyle.Quint)
 	return self
 end

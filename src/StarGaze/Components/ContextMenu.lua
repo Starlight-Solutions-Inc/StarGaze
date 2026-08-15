@@ -13,8 +13,17 @@ function ContextMenu:add(item)
 	return button
 end
 function ContextMenu:open(position)
-	if position then self.Instance.Position=position end
-	self.Instance.Visible=true;return self
+	if typeof(position) == "Vector2" then
+		local size = self.Runtime.Gui.AbsoluteSize
+		self.Instance.Position = UDim2.fromScale(
+			math.clamp(position.X / math.max(size.X, 1), 0, 0.78),
+			math.clamp(position.Y / math.max(size.Y, 1), 0, 0.72)
+		)
+	elseif typeof(position) == "UDim2" then
+		self.Instance.Position = position
+	end
+	self.Instance.Visible=true
+	return self
 end
 function ContextMenu:close() self.Instance.Visible=false;return self end
 function ContextMenu:toggle(position) if self.Instance.Visible then return self:close() end return self:open(position) end

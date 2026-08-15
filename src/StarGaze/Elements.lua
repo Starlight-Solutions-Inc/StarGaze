@@ -23,7 +23,9 @@ function Elements:frame(parent, options)
 		ZIndex = options.ZIndex or 1,
 		Parent = parent or self.Runtime.Gui,
 	})
-	Utils.corner(frame, options.Radius or 10)
+	if options.Radius ~= 0 then
+		Utils.corner(frame, options.Radius or 10)
+	end
 	if options.Stroke then
 		Utils.stroke(frame, Utils.color(options.StrokeColor or "Border", theme), options.StrokeTransparency or 0, options.StrokeThickness or 1)
 	end

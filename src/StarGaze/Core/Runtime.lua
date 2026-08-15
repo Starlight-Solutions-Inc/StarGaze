@@ -110,8 +110,12 @@ end
 
 
 function Runtime:configure(values)
+	values = values or {}
 	self.Settings:update(values)
-	self.Options = Utils.merge(self.Options, values or {})
+	self.Options = Utils.merge(self.Options, values)
+	if values.AnimationSpeed ~= nil then
+		self.Options.AnimationSpeed = math.max(0, values.AnimationSpeed)
+	end
 	return self
 end
 
@@ -271,8 +275,13 @@ function Runtime:glass(parent, options)
 end
 
 function Runtime:destroy()
+	if self.Plugins then
+		self.Plugins:destroy()
+	end
 	for _, connection in ipairs(self.Connections) do
-		connection:Disconnect()
+		if connection then
+			connection:Disconnect()
+		end
 	end
 	for _, instance in ipairs(self.Instances) do
 		if instance and instance.Parent then

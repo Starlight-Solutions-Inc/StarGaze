@@ -9,11 +9,23 @@ function Accordion.new(runtime,parent,options)
 	local body=runtime:createFrame(root,{Size=UDim2.fromScale(0.92,0.42),Position=UDim2.fromScale(0.04,0.52),Color=options.BodyColor or "SurfaceAlt",Radius=8,Visible=false})
 	if options.Build then options.Build(body,runtime) end
 	runtime:track(root);runtime:track(trigger)
-	local self=setmetatable({Runtime=runtime,Instance=root,Body=body,Arrow=arrow,Open=false},Accordion)
+	local self=setmetatable({Runtime=runtime,Instance=root,Body=body,Arrow=arrow,Open=false,OriginalWidth=root.Size.X.Scale,CollapsedHeight=0.12,ExpandedHeight=0.44},Accordion)
 	runtime:connect(trigger.Activated:Connect(function() self:toggle() end))
 	return self
 end
-function Accordion:open() self.Open=true;self.Body.Visible=true;self.Arrow.Text="⌃";return self end
-function Accordion:close() self.Open=false;self.Body.Visible=false;self.Arrow.Text="⌄";return self end
+function Accordion:open()
+	self.Open = true
+	self.Body.Visible = true
+	self.Arrow.Text = "⌃"
+	self.Runtime:animate(self.Instance, {Size = UDim2.fromScale(self.OriginalWidth, self.ExpandedHeight)}, 0.16)
+	return self
+end
+function Accordion:close()
+	self.Open = false
+	self.Body.Visible = false
+	self.Arrow.Text = "⌄"
+	self.Runtime:animate(self.Instance, {Size = UDim2.fromScale(self.OriginalWidth, self.CollapsedHeight)}, 0.16)
+	return self
+end
 function Accordion:toggle() if self.Open then return self:close() end return self:open() end
 return Accordion

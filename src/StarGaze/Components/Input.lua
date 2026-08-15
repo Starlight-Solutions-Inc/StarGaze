@@ -9,8 +9,8 @@ function Input.new(runtime,parent,options)
 	if options.Label then runtime:createText(holder,options.Label,{Size=UDim2.fromScale(0.23,1),Position=UDim2.fromScale(0.04,0),TextSize=options.LabelSize or 13}) end
 	local box=Utils.create("Frame",{BackgroundColor3=runtime.Theme.SurfaceAlt,BorderSizePixel=0,Size=options.Label and UDim2.fromScale(0.67,0.66) or UDim2.fromScale(0.92,0.66),Position=options.Label and UDim2.fromScale(0.29,0.17) or UDim2.fromScale(0.04,0.17),Parent=holder})
 	Utils.corner(box,8)
-	Utils.stroke(box,runtime.Theme.BorderSoft,0.25)
-	local field=Utils.create("TextBox",{BackgroundTransparency=1,BorderSizePixel=0,ClearTextOnFocus=false,Size=UDim2.fromScale(0.94,1),Position=UDim2.fromScale(0.03,0),Text=options.Default or "",PlaceholderText=options.Placeholder or "Type here...",TextColor3=runtime.Theme.Text,PlaceholderColor3=runtime.Theme.Muted,TextSize=options.TextSize or 13,Font=runtime.Options.Font,TextXAlignment=Enum.TextXAlignment.Left,Parent=box})
+	Utils.stroke(box,runtime.Theme.Border,0.25)
+	local field=Utils.create("TextBox",{BackgroundTransparency=1,BorderSizePixel=0,ClearTextOnFocus=false,Size=UDim2.fromScale(0.94,1),Position=UDim2.fromScale(0.03,0),Text=options.Default or "",PlaceholderText=options.Placeholder or "Type here...",TextColor3=runtime.Theme.Text,PlaceholderColor3=runtime.Theme.Subtext,TextSize=options.TextSize or 13,Font=runtime.Options.Font,TextXAlignment=Enum.TextXAlignment.Left,Parent=box})
 	if options.MultiLine then field.MultiLine=true end
 	runtime:track(holder);runtime:track(box);runtime:track(field)
 	local self=setmetatable({Runtime=runtime,Instance=holder,Field=field},Input)

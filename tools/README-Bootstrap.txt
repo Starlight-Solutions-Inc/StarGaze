@@ -1,44 +1,24 @@
-StarGaze Bootstrap
-==================
+STAR GAZE STUDIO BOOTSTRAP
 
-The bootstrap is the only file you need to run. It downloads InstallInStudio.lua from the StarGaze GitHub repository and executes it with loadstring. The downloaded installer is responsible for discovering the repository files, creating the ModuleScript hierarchy, and installing or updating StarGaze.
+1. Open Roblox Studio.
+2. Enable Game Settings > Security > Allow HTTP Requests.
+3. Open View > Command Bar.
+4. Paste the contents of Bootstrap.lua.
+5. Change InstallPath if you want a different destination.
+6. Run the command.
 
-Configuration
--------------
+The bootstrap downloads the current InstallInStudio.lua file from the StarGaze GitHub repository. The installer downloads the framework source, verifies that every Lua file can be retrieved, and only then replaces the existing installation.
 
-InstallPath controls where StarGaze is placed.
+Default:
+InstallPath = "ReplicatedStorage.StarGaze"
+Mode = "Auto"
 
-    InstallPath = "ReplicatedStorage.StarGaze"
+Modes:
+Auto   = install when missing, update when present
+Install = install only; refuses to overwrite
+Update  = update only; requires an existing installation
 
-Other examples:
+After installation:
+local StarGaze = require(game.ReplicatedStorage.StarGaze)
 
-    InstallPath = "ReplicatedStorage.UI.StarGaze"
-    InstallPath = "ServerScriptService.StarGaze"
-
-Mode controls the behavior:
-
-    Mode = "Auto"
-
-Auto installs when missing and updates when already installed.
-
-    Mode = "Install"
-
-Install only; fails if the destination already exists.
-
-    Mode = "Update"
-
-Update only; fails if the destination does not exist.
-
-Requirements
-------------
-
-Enable Game Settings > Security > Allow HTTP Requests.
-
-Usage
------
-
-Run StarGazeBootstrap.server.lua from Studio. The bootstrap fetches the current installer from:
-
-https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua
-
-Run the same bootstrap again to receive the current StarGaze source from GitHub.
+Use the bootstrap only in Studio. It is not intended to modify ModuleScript.Source from a live published server.

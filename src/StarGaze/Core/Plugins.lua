@@ -1,4 +1,3 @@
-\
 local Utils = require(script.Parent.Utils)
 
 local Plugins = {}
@@ -23,6 +22,7 @@ function Plugins:register(plugin, options)
 	local context = {
 		Runtime = self.Runtime,
 		Options = Utils.merge({}, options or {}),
+		Plugin = plugin,
 	}
 
 	self.Loaded[plugin.Name] = {
@@ -32,7 +32,11 @@ function Plugins:register(plugin, options)
 	table.insert(self.Order, plugin.Name)
 
 	if type(plugin.Setup) == "function" then
-		plugin.Setup(context)
+		local success, errorMessage = pcall(plugin.Setup, context)
+		if not success then
+			self:unregister(plugin.Name)
+			error("[StarGaze] Plugin " .. plugin.Name .. " failed during Setup: " .. tostring(errorMessage), 2)
+		end
 	end
 
 	return context
@@ -45,7 +49,7 @@ function Plugins:unregister(name)
 	end
 
 	if type(entry.Definition.Destroy) == "function" then
-		entry.Definition.Destroy(entry.Context)
+		pcall(entry.Definition.Destroy, entry.Context)
 	end
 
 	self.Loaded[name] = nil
@@ -70,6 +74,16 @@ function Plugins:list()
 		table.insert(result, name)
 	end
 	return result
+end
+
+function Plugins:destroy()
+	local names = {}
+	for _, name in ipairs(self.Order) do
+		table.insert(names, name)
+	end
+	for _, name in ipairs(names) do
+		self:unregister(name)
+	end
 end
 
 return Plugins

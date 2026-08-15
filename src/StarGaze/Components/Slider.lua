@@ -38,5 +38,10 @@ function Slider:set(value,silent)
 end
 function Slider:get() return self.Value end
 function Slider:changed(callback) self.OnChanged=callback return self end
-function Slider:format(callback) self.Formatter=callback return self end
+function Slider:format(callback)
+	assert(callback == nil or type(callback) == "function", "Slider formatter must be a function")
+	self.Formatter = callback
+	self:set(self.Value, true)
+	return self
+end
 return Slider

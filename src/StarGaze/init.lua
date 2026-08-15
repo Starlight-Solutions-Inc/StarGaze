@@ -6,7 +6,7 @@ local Styles = require(script.Core.Styles)
 local Templates = require(script.Core.Templates)
 
 local StarGaze = {
-	Version = "2.0.0",
+	Version = "2.1.0",
 	Themes = Themes,
 	Presets = Presets,
 	Settings = Settings,

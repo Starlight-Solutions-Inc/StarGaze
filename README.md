@@ -1,76 +1,70 @@
-StarGaze
+# StarGaze
 
-StarGaze is a modular, highly customizable UI framework for Roblox built by Starlight Solutions, Inc.
+StarGaze is a modular UI framework for Roblox built by Starlight Solutions, Inc.
 
-It is designed for developers who want polished interfaces without having to build the underlying UI systems from scratch. StarGaze provides reusable components, themes, templates, presets, animations, responsive sizing, plugins, overlays, and a configurable styling system.
+It is meant to give Roblox developers a solid visual foundation without forcing every project into the same layout. The framework separates runtime behavior, themes, styles, templates, presets, interactions and components so projects can keep their own visual identity.
 
-Features
-Modular Luau architecture
-Built-in dark themes
-Custom theme support
-Multiple visual styles
-Custom style registration
-UI templates
-Reusable presets
-Custom preset registration
-Responsive scaling
-Configurable density
-Global animation settings
-Hover and press interactions
-Configurable corner radii
-Custom fonts
-Text scaling
-Glass-style surfaces
-Cards and panels
-Buttons
-Toggles
-Checkboxes
-Radio controls
-Sliders
-Progress bars
-Inputs
-Dropdowns
-Tabs
-Segmented controls
-Accordions
-Keybind controls
-Color pickers
-Notifications
-Confirmation dialogs
-Context menus
-Command palette
-Tooltips
-Badges
-Dividers
-Windows
-Plugin system
-Runtime configuration
-Runtime theme switching
-No external dependencies
-Installation
+## What is included
 
-StarGaze includes a bootstrap installer that downloads the current installer from GitHub. The installer then downloads the framework files and creates or updates the StarGaze installation in your game.
+- Modular Luau architecture
+- Built-in dark themes
+- Custom themes
+- Built-in styles and custom styles
+- Templates for common application layouts
+- Reusable presets
+- Runtime settings
+- Responsive scale-based layout helpers
+- Animation and interaction controls
+- Buttons
+- Windows
+- Toggles
+- Checkboxes
+- Radio controls
+- Sliders
+- Progress bars
+- Inputs
+- Dropdowns
+- Tabs
+- Segmented controls
+- Accordions
+- Keybind controls
+- Color picker palettes
+- Notifications
+- Confirmation dialogs
+- Context menus
+- Command palette
+- Tooltips
+- Badges
+- Dividers
+- Plugin lifecycle support
+- Runtime theme switching
+- No external runtime dependencies
 
-This means users do not need to manually copy every ModuleScript into ReplicatedStorage.
+## Installation
 
-Requirements
+StarGaze can be installed from the GitHub repository with the included Studio bootstrap.
 
-Before using the bootstrap, enable HTTP requests in Roblox Studio.
+The bootstrap is intentionally small. It downloads the current `tools/InstallInStudio.lua` file from GitHub and passes the installation settings to it. The installer then downloads the framework source and creates or replaces the ModuleScript hierarchy.
 
-Go to:
+### Requirements
 
+Use the installer in Roblox Studio while editing the place. It is not intended to modify ModuleScript source from a live published server.
+
+Enable HTTP requests in:
+
+```text
 Game Settings
 └── Security
     └── Allow HTTP Requests = ON
+```
 
-The bootstrap also uses loadstring. Run it in an environment where loadstring is permitted.
+The bootstrap also uses `loadstring` to execute the installer returned by GitHub. Run it from the Studio Command Bar or another Studio environment where `loadstring` is available.
 
-For a normal server-side installation, use a Script in ServerScriptService.
+### Full bootstrap
 
-Bootstrap Installer
+Open **View → Command Bar** in Roblox Studio and paste this entire script:
 
-Create a Script in ServerScriptService, then paste the following:
-
+```lua
 local HttpService = game:GetService("HttpService")
 
 local CONFIG = {
@@ -79,267 +73,270 @@ local CONFIG = {
 	InstallerUrl = "https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua",
 }
 
-local function request(url)
-	local success, result = pcall(function()
-		return HttpService:GetAsync(url, false)
-	end)
-
-	if not success then
-		error("[StarGaze Bootstrap] Failed to download installer:\n" .. tostring(result))
-	end
-
-	if not result or result == "" then
-		error("[StarGaze Bootstrap] Installer returned an empty response.")
-	end
-
-	return result
-end
-
 if not HttpService.HttpEnabled then
 	error("[StarGaze Bootstrap] HTTP requests are disabled. Enable Game Settings > Security > Allow HTTP Requests.")
 end
 
-local source = request(CONFIG.InstallerUrl)
-
-if type(loadstring) ~= "function" then
-	error("[StarGaze Bootstrap] loadstring is unavailable in this environment.")
-end
-
-local installer, compileError = loadstring(source)
-
-if not installer then
-	error("[StarGaze Bootstrap] Installer could not be compiled:\n" .. tostring(compileError))
-end
-
-local success, runtimeError = pcall(function()
-	installer({
-		InstallPath = CONFIG.InstallPath,
-		Mode = CONFIG.Mode,
-	})
+local success, source = pcall(function()
+	return HttpService:GetAsync(CONFIG.InstallerUrl, false)
 end)
 
 if not success then
-	error("[StarGaze Bootstrap] Installer failed:\n" .. tostring(runtimeError))
+	error("[StarGaze Bootstrap] Could not download the installer:\n" .. tostring(source))
 end
 
-print("[StarGaze Bootstrap] Installation/update completed.")
-Installation Modes
-Auto
+if type(source) ~= "string" or source == "" then
+	error("[StarGaze Bootstrap] GitHub returned an empty installer.")
+end
 
-Creates StarGaze when it does not exist and updates an existing installation.
+if type(loadstring) ~= "function" then
+	error("[StarGaze Bootstrap] loadstring is unavailable in this Studio environment.")
+end
 
+local installer, compileError = loadstring(source)
+if not installer then
+	error("[StarGaze Bootstrap] The GitHub installer could not be compiled:\n" .. tostring(compileError))
+end
+
+local ran, runtimeError = pcall(installer, {
+	InstallPath = CONFIG.InstallPath,
+	Mode = CONFIG.Mode,
+})
+
+if not ran then
+	error("[StarGaze Bootstrap] The installer failed:\n" .. tostring(runtimeError))
+end
+
+print("[StarGaze Bootstrap] StarGaze installation/update completed.")
+```
+
+### Installation modes
+
+`Auto` installs when StarGaze is missing and replaces the existing installation when it is present.
+
+```lua
 Mode = "Auto"
-Install
+```
 
-Only installs StarGaze when it is not already present.
+`Install` refuses to overwrite an existing installation.
 
+```lua
 Mode = "Install"
-Update
+```
 
-Only updates an existing StarGaze installation.
+`Update` requires an existing StarGaze installation.
 
+```lua
 Mode = "Update"
-Custom Installation Location
+```
 
-The installation path is controlled by:
+### Installation location
 
+The default is:
+
+```lua
 InstallPath = "ReplicatedStorage.StarGaze"
+```
 
-The default installation creates:
+You can change it without changing the installer itself.
 
-ReplicatedStorage
-└── StarGaze
-
-You can change it to another location.
-
-For example:
-
+```lua
 InstallPath = "ReplicatedStorage.UI.StarGaze"
+```
 
-creates:
+This creates:
 
+```text
 ReplicatedStorage
 └── UI
     └── StarGaze
+```
 
-Another example:
+The final object is always a `ModuleScript`, so the normal usage is:
 
-InstallPath = "ServerStorage.StarGaze"
-
-The installer automatically creates missing intermediate folders.
-
-Using StarGaze
-
-After installation, require the root ModuleScript:
-
+```lua
 local StarGaze = require(game.ReplicatedStorage.StarGaze)
+```
 
-Create a runtime:
+## Basic usage
+
+```lua
+local StarGaze = require(game.ReplicatedStorage.StarGaze)
 
 local UI = StarGaze.create({
 	Theme = "Obsidian",
 })
 
-Create a window:
-
 local window = UI:window({
-	Name = "Main",
 	Title = "My Interface",
 	Subtitle = "Powered by StarGaze",
-	Size = UDim2.fromScale(0.65, 0.7),
+	Size = UDim2.fromScale(0.64, 0.72),
 	Position = UDim2.fromScale(0.5, 0.5),
 })
 
-Create a component:
-
 UI:button(window.Content, {
-	Text = "Click Me",
-
+	Text = "Save",
 	OnClick = function()
 		UI:notify({
-			Title = "StarGaze",
-			Text = "Button activated.",
+			Title = "Saved",
+			Text = "Your changes have been saved.",
 			Type = "Success",
 		})
 	end,
 })
-Themes
+```
 
-StarGaze includes several built-in themes.
+## Themes
 
-Obsidian
-Midnight
-Carbon
-Violet
+Built-in themes:
 
-Use a theme when creating the runtime:
+- `Obsidian`
+- `Midnight`
+- `Carbon`
+- `Violet`
 
-local UI = StarGaze.create({
-	Theme = "Midnight",
+Switch themes at runtime:
+
+```lua
+UI:setTheme("Midnight")
+```
+
+Register a custom theme:
+
+```lua
+StarGaze.Themes.register("Studio", {
+	Background = Color3.fromRGB(9, 10, 13),
+	Surface = Color3.fromRGB(16, 17, 21),
+	SurfaceAlt = Color3.fromRGB(24, 25, 30),
+	Glass = Color3.fromRGB(24, 25, 30),
+	Card = Color3.fromRGB(19, 20, 25),
+	Border = Color3.fromRGB(52, 54, 62),
+	Text = Color3.fromRGB(245, 246, 249),
+	Subtext = Color3.fromRGB(151, 154, 164),
+	Accent = Color3.fromRGB(145, 96, 255),
+	AccentAlt = Color3.fromRGB(188, 149, 255),
+	Success = Color3.fromRGB(74, 208, 128),
+	Warning = Color3.fromRGB(245, 182, 66),
+	Danger = Color3.fromRGB(239, 82, 88),
+	Info = Color3.fromRGB(83, 157, 255),
 })
 
-Or change it later:
+UI:setTheme("Studio")
+```
 
-UI:setTheme("Violet")
-Custom Themes
+## Styles
 
-Register your own theme:
+Built-in styles are intended to control the shape and interaction language of components.
 
-StarGaze.Themes.register("Custom", {
-	Background = Color3.fromRGB(8, 8, 10),
-	Surface = Color3.fromRGB(15, 15, 19),
-	SurfaceAlt = Color3.fromRGB(23, 23, 29),
-	Glass = Color3.fromRGB(23, 23, 29),
-	Card = Color3.fromRGB(19, 19, 24),
-
-	Border = Color3.fromRGB(48, 48, 58),
-
-	Text = Color3.fromRGB(245, 245, 248),
-	Subtext = Color3.fromRGB(150, 150, 162),
-
-	Accent = Color3.fromRGB(145, 95, 255),
-	AccentAlt = Color3.fromRGB(190, 150, 255),
-
-	Success = Color3.fromRGB(76, 210, 130),
-	Warning = Color3.fromRGB(245, 183, 66),
-	Danger = Color3.fromRGB(240, 82, 86),
-	Info = Color3.fromRGB(82, 156, 255),
-})
-
-Then:
-
-UI:setTheme("Custom")
-Runtime Configuration
-
-StarGaze exposes global settings so an application can have a consistent visual language.
-
-Example:
-
-UI:configure({
-	Density = "Compact",
-
-	Style = "Glass",
-	Template = "Dashboard",
-
-	Animation = true,
-	AnimationSpeed = 0.14,
-
-	Hover = true,
-	Press = true,
-
-	Tooltips = true,
-	Shadows = true,
-
-	TextScale = 0.95,
-
-	SidebarWidth = 0.2,
-})
-
-The exact settings available may vary as the framework evolves.
-
-Built-In Styles
-
-StarGaze provides visual styles that can be used as a starting point.
-
+```text
 Soft
 Sharp
 Glass
 Dense
+```
 
-Example:
+Use a style globally:
 
+```lua
 UI:configure({
 	Style = "Glass",
 })
-Custom Styles
+```
 
-Create your own style:
+Register your own:
 
+```lua
 UI:registerStyle("Studio", {
 	Radius = 8,
 	StrokeTransparency = 0.2,
 	HoverStrength = 0.04,
 	PressScale = 0.985,
-	Shadow = true,
+	Shadow = false,
 })
+```
 
-Then use it:
+## Runtime settings
 
+The runtime exposes settings that can be used to keep a complete project visually consistent.
+
+```lua
 UI:configure({
-	Style = "Studio",
-})
-Templates
-
-StarGaze includes reusable layout templates.
-
-Examples include:
-
-MinimalWindow
-Dashboard
-CompactPanel
-Inspector
-
-Example:
-
-UI:configure({
+	Density = "Compact",
+	Style = "Glass",
 	Template = "Dashboard",
+	Animation = true,
+	AnimationSpeed = 0.14,
+	Hover = true,
+	Press = true,
+	FocusRing = true,
+	Tooltips = true,
+	Glassmorphism = true,
+	Shadows = false,
+	Outline = true,
+	OutlineTransparency = 0.3,
+	ModalOpacity = 0.42,
+	NotificationDuration = 4,
+	NotificationPosition = "TopRight",
+	Responsive = true,
+	ScaleMin = 0.78,
+	ScaleMax = 1.08,
+	TextScale = 1,
+	IconStyle = "Solid",
+	IconSize = 18,
+	SidebarWidth = 0.18,
+	SectionSpacing = 0.014,
+	ComponentSpacing = 0.012,
+	PagePadding = 0.022,
 })
+```
 
-Templates are intended to provide a starting structure while still allowing individual components to be customized.
+Individual values can also be read or changed:
 
-Plugins
+```lua
+local density = UI:setting("Density")
+UI:setting("Density", "Comfortable")
+```
 
-StarGaze supports custom plugins so developers can extend the framework without modifying its core source.
+## Templates
 
-Example:
+Built-in layout templates include:
 
-UI:registerPlugin({
+- `MinimalWindow`
+- `Dashboard`
+- `CompactPanel`
+- `Inspector`
+
+Retrieve one as a configuration table:
+
+```lua
+local template = UI:template("Dashboard")
+```
+
+Register your own:
+
+```lua
+UI:registerTemplate("Inventory", {
+	Window = {
+		Size = UDim2.fromScale(0.7, 0.78),
+		CornerRadius = 14,
+		Stroke = true,
+	},
+	Content = {
+		Padding = 0.02,
+	},
+})
+```
+
+## Plugins
+
+Plugins can add behavior without modifying StarGaze's core modules.
+
+```lua
+local plugin = UI:registerPlugin({
 	Name = "DeveloperTools",
 
 	Setup = function(context)
-		local runtime = context.Runtime
-
-		runtime:notify({
+		context.Runtime:notify({
 			Title = "Developer Tools",
 			Text = "Plugin loaded.",
 			Type = "Info",
@@ -349,25 +346,19 @@ UI:registerPlugin({
 	Destroy = function(context)
 	end,
 })
+```
 
-Plugins can be used to add framework-specific behavior, tools, integrations, components, or application features.
+Plugin lifecycle methods are `Setup` and `Destroy`.
 
-Presets
+```lua
+UI:unregisterPlugin("DeveloperTools")
+```
 
-StarGaze contains reusable visual presets.
+## Components
 
-Example:
+StarGaze currently includes:
 
-local button = UI:button(parent, {
-	Text = "Primary Action",
-})
-
-Presets can also be customized and registered for projects that need a consistent design system.
-
-Components
-
-StarGaze currently provides components including:
-
+```text
 Window
 Button
 Toggle
@@ -389,101 +380,57 @@ Tooltip
 Confirm
 ContextMenu
 CommandPalette
+```
 
-Every component is implemented as a separate module, allowing the framework to grow without turning into a single monolithic script.
+Every component is a separate module, while the runtime exposes a consistent API for creating them.
 
-Responsive UI
+## Responsive layouts
 
-StarGaze is designed around scale-based layouts where practical rather than relying heavily on fixed pixel offsets.
+StarGaze is designed to favor proportional sizing. The built-in responsive helper adds a controlled `UIScale` and reacts to viewport changes.
 
-A responsive component can be configured with:
-
+```lua
 UI:responsive(window.Instance, {
 	BaseWidth = 1440,
-	Min = 0.8,
-	Max = 1.05,
+	Min = 0.78,
+	Max = 1.04,
 })
+```
 
-This allows the UI to adapt to different screen sizes while retaining its intended proportions.
+For reusable application layouts, prefer `UDim2.fromScale` and scale-based padding where possible.
 
-Example
+## Example project
 
-A basic interface:
+`example/Example.client.lua` contains a complete showcase designed to demonstrate StarGaze as an actual interface rather than a grid of isolated component samples.
 
-local StarGaze = require(game.ReplicatedStorage.StarGaze)
+The example includes:
 
-local UI = StarGaze.create({
-	Theme = "Obsidian",
-})
+- Sidebar navigation
+- Overview page
+- Live component preview
+- Runtime settings
+- Theme switching
+- Component inventory
+- Command palette
+- Notifications
+- Responsive scaling
 
-local window = UI:window({
-	Title = "Example",
-	Subtitle = "StarGaze UI",
-	Size = UDim2.fromScale(0.65, 0.7),
-	Position = UDim2.fromScale(0.5, 0.5),
-})
+## Repository structure
 
-local content = UI:createContainer(window.Content, {
-	Size = UDim2.fromScale(0.94, 0.92),
-	Position = UDim2.fromScale(0.03, 0.04),
-
-	Layout = {
-		Padding = UDim.new(0.015, 0),
-	},
-})
-
-UI:createText(content, "Welcome", {
-	Size = UDim2.fromScale(1, 0.07),
-	TextSize = 20,
-})
-
-UI:toggle(content, {
-	Text = "Enable feature",
-	Default = true,
-})
-
-UI:slider(content, {
-	Text = "Volume",
-	Min = 0,
-	Max = 100,
-	Default = 75,
-})
-
-UI:button(content, {
-	Text = "Apply",
-
-	OnClick = function()
-		UI:notify({
-			Title = "Applied",
-			Text = "Your settings have been updated.",
-			Type = "Success",
-		})
-	end,
-})
-Updating StarGaze
-
-The bootstrap uses the GitHub installer:
-
-https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua
-
-When the bootstrap runs with:
-
-Mode = "Auto"
-
-it will install StarGaze when it is missing and update the existing installation when it is already present.
-
-This allows projects to update StarGaze without manually copying every ModuleScript.
-
-For production projects, consider pinning installations to a specific release or commit instead of automatically pulling mutable main content.
-
-Development
-
-The repository is structured for modular development:
-
+```text
 StarGaze/
 ├── src/
 │   └── StarGaze/
 │       ├── Core/
+│       │   ├── Interaction.lua
+│       │   ├── Plugins.lua
+│       │   ├── Presets.lua
+│       │   ├── Responsive.lua
+│       │   ├── Runtime.lua
+│       │   ├── Settings.lua
+│       │   ├── Styles.lua
+│       │   ├── Templates.lua
+│       │   ├── Themes.lua
+│       │   └── Utils.lua
 │       ├── Components/
 │       ├── Elements.lua
 │       └── init.lua
@@ -493,13 +440,22 @@ StarGaze/
 ├── default.project.json
 ├── LICENSE
 └── README.md
+```
 
-The project can be used with Rojo for development and synchronization with Roblox Studio.
+## Updating StarGaze
 
-License
+The bootstrap always downloads the installer from:
+
+```text
+https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua
+```
+
+The installer then discovers the current Lua files in `src/StarGaze`, downloads the complete set first, and only replaces the existing installation after every download succeeds.
+
+For production projects, pinning StarGaze to a release tag or commit is safer than automatically following `main`.
+
+## License
 
 StarGaze is released under the MIT License.
 
 Copyright (c) 2026 Starlight Solutions, Inc.
-
-This allows developers to use, modify, redistribute, and incorporate StarGaze into their own projects, including commercial projects, subject to the terms of the MIT License.

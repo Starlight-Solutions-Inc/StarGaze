@@ -79,6 +79,10 @@ Themes.Definitions = {
 	},
 }
 
+for _, theme in pairs(Themes.Definitions) do
+	theme.Input = theme.SurfaceAlt
+end
+
 function Themes.get(name)
 	return Themes.Definitions[name]
 end

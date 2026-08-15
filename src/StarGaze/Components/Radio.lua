@@ -27,4 +27,18 @@ end
 function Radio:set(value) return self:update(value) end
 function Radio:get() return self.Value end
 function Radio:changed(callback) self.OnChanged=callback return self end
+
+function Radio:group(radios)
+	for _, radio in ipairs(radios or {}) do
+		if radio ~= self and radio.set then
+			local original = radio.OnChanged
+			radio.OnChanged = function(value, instance)
+				if value then self:set(false) end
+				if original then original(value, instance) end
+			end
+		end
+	end
+	return self
+end
+
 return Radio

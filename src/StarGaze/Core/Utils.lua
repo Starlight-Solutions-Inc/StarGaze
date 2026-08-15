@@ -31,6 +31,9 @@ function Utils.color(value, theme)
 	if type(value) == "string" and theme[value] then
 		return theme[value]
 	end
+	if type(value) == "string" then
+		return theme.Text or Color3.new(1, 1, 1)
+	end
 	return value
 end
 

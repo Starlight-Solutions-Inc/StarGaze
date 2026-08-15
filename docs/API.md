@@ -3,96 +3,77 @@
 ## Runtime
 
 ```lua
-local UI = StarGaze.create(options)
+local StarGaze = require(game.ReplicatedStorage.StarGaze)
+local UI = StarGaze.create({Theme = "Obsidian"})
 ```
 
-### Creation
+Core methods include:
 
-- `UI:window(options)`
-- `UI:createFrame(parent, options)`
-- `UI:createText(parent, text, options)`
-- `UI:createContainer(parent, options)`
-- `UI:card(parent, options)`
-- `UI:glass(parent, options)`
+```text
+create
+setTheme
+onThemeChanged
+configure
+setting
+registerPlugin
+unregisterPlugin
+getPlugin
+listPlugins
+registerStyle
+applyStyle
+registerTemplate
+template
+responsive
+destroy
+```
 
-### Components
+## Layout
 
-- `UI:button(parent, options)`
-- `UI:toggle(parent, options)`
-- `UI:checkbox(parent, options)`
-- `UI:radio(parent, options)`
-- `UI:slider(parent, options)`
-- `UI:progress(parent, options)`
-- `UI:dropdown(parent, options)`
-- `UI:input(parent, options)`
-- `UI:tabs(parent, options)`
-- `UI:segmented(parent, options)`
-- `UI:accordion(parent, options)`
-- `UI:keybind(parent, options)`
-- `UI:colorPicker(parent, options)`
-- `UI:badge(parent, options)`
-- `UI:divider(parent, options)`
-- `UI:tooltip(target, options)`
-- `UI:notification(options)`
-- `UI:notify(options)`
-- `UI:confirm(options)`
-- `UI:contextMenu(options)`
-- `UI:commandPalette(options)`
+```text
+createFrame
+createText
+createContainer
+card
+glass
+```
 
-### Runtime utilities
+## Components
 
-- `UI:setTheme(theme)`
-- `UI:onThemeChanged(callback)`
-- `UI:responsive(root, options)`
-- `UI:animate(instance, properties, duration, style, direction)`
-- `UI:destroy()`
+```text
+window
+button
+toggle
+checkbox
+radio
+slider
+progress
+input
+dropdown
+tabs
+segmented
+accordion
+keybind
+colorPicker
+badge
+divider
+notification
+notify
+confirm
+contextMenu
+commandPalette
+tooltip
+```
 
-## Component conventions
+Most interactive components return a component object with methods such as `set`, `get`, `changed`, `open`, `close`, or `toggle`, depending on the component.
 
-Most interactive components return a handle instead of exposing raw Roblox instances as the primary API.
+## Responsive sizing
 
-Common methods include:
+Use scale-based `UDim2` values where possible. The responsive helper applies a bounded `UIScale` to a root element and tracks viewport changes.
 
 ```lua
-component:set(value)
-component:get()
-component:changed(callback)
-component:destroy()
+UI:responsive(window.Instance, {
+	BaseWidth = 1440,
+	Min = 0.78,
+	Max = 1.04,
+})
 ```
-
-Specialized components expose additional methods such as `open`, `close`, `toggle`, `select`, `connect`, and `setText`.
-
-
-## Runtime customization
-
-### `UI:configure(values)`
-Updates multiple framework settings at once. Supported settings include `Density`, `Style`, `Template`, `CornerRadius`, `Animation`, `AnimationSpeed`, `Hover`, `Press`, `FocusRing`, `Tooltips`, `Glassmorphism`, `Shadows`, `Outline`, `OutlineTransparency`, `ModalOpacity`, `NotificationDuration`, `NotificationPosition`, `Responsive`, `ScaleMin`, `ScaleMax`, `Font`, `TextScale`, `IconStyle`, `IconSize`, `SidebarWidth`, `SectionSpacing`, `ComponentSpacing`, and `PagePadding`.
-
-### `UI:setting(key, value)`
-Gets a setting when `value` is omitted or changes a single setting when provided.
-
-### `UI:registerStyle(name, definition)`
-Adds a reusable style profile.
-
-### `UI:applyStyle(instance, style, overrides)`
-Applies a style profile to a GUI instance.
-
-### `UI:registerTemplate(name, definition)`
-Adds a reusable composition template for windows and other framework surfaces.
-
-### `UI:template(name, overrides)`
-Resolves a registered template.
-
-## Plugins
-
-### `UI:registerPlugin(plugin, options)`
-Registers a plugin. A plugin table requires a unique `Name` and may provide `Setup(context)` and `Destroy(context)`. The context contains the runtime and plugin-specific options.
-
-### `UI:unregisterPlugin(name)`
-Unloads a registered plugin and calls its `Destroy` callback.
-
-### `UI:getPlugin(name)`
-Returns a plugin context.
-
-### `UI:listPlugins()`
-Returns registered plugin names in installation order.

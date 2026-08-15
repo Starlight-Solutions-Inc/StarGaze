@@ -1,4 +1,3 @@
-\
 local Plugin = {
 	Name = "QuickActions",
 }
