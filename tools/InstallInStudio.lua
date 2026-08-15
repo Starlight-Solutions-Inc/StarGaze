@@ -1,10 +1,19 @@
 local HttpService = game:GetService("HttpService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local OWNER = "Starlight-Solutions-Inc"
 local REPOSITORY = "StarGaze"
 local BRANCH = "main"
-local BASE = "https://raw.githubusercontent.com/" .. OWNER .. "/" .. REPOSITORY .. "/" .. BRANCH .. "/src/StarGaze"
+local SOURCE_PATH = "src/StarGaze"
+
+local INSTALL_PATH = rawget(_G, "StarGazeInstallPath") or "ReplicatedStorage.StarGaze"
+
+local BASE_URL = string.format(
+	"https://raw.githubusercontent.com/%s/%s/%s/%s",
+	OWNER,
+	REPOSITORY,
+	BRANCH,
+	SOURCE_PATH
+)
 
 local files = {
 	"Core/Runtime.lua",
@@ -37,50 +46,145 @@ local files = {
 	"Components/ColorPicker.lua",
 }
 
-local old = ReplicatedStorage:FindFirstChild("StarGaze")
-if old then old:Destroy() end
+local function getSource(url)
+	local success, result = pcall(function()
+		return HttpService:GetAsync(url, false)
+	end)
+
+	if not success then
+		return nil, tostring(result)
+	end
+
+	if type(result) ~= "string" or result == "" then
+		return nil, "GitHub returned an empty response."
+	end
+
+	return result
+end
+
+local function splitPath(path)
+	local parts = {}
+
+	for part in string.gmatch(path, "[^%.]+") do
+		table.insert(parts, part)
+	end
+
+	return parts
+end
+
+local function resolveParent(path)
+	local parts = splitPath(path)
+
+	assert(#parts >= 2, "Install path must contain a parent and final object name.")
+
+	local current
+
+	if parts[1] == "game" then
+		current = game
+	else
+		current = game:FindFirstChild(parts[1])
+	end
+
+	assert(current, "Could not find install root: " .. parts[1])
+
+	for index = 2, #parts - 1 do
+		current = current:FindFirstChild(parts[index])
+		assert(current, "Could not find install path: " .. table.concat(parts, ".", 1, index))
+	end
+
+	return current, parts[#parts]
+end
+
+local function getOrCreateFolder(parent, path)
+	if path == "" then
+		return parent
+	end
+
+	local current = parent
+
+	for part in string.gmatch(path, "[^/]+") do
+		local existing = current:FindFirstChild(part)
+
+		if existing then
+			assert(existing:IsA("Folder"), part .. " exists but is not a Folder.")
+			current = existing
+		else
+			local folder = Instance.new("Folder")
+			folder.Name = part
+			folder.Parent = current
+			current = folder
+		end
+	end
+
+	return current
+end
+
+assert(HttpService.HttpEnabled, "[StarGaze] HTTP requests are disabled.")
+
+local parent, rootName = resolveParent(INSTALL_PATH)
+local old = parent:FindFirstChild(rootName)
+
+if old then
+	print("[StarGaze] Updating " .. INSTALL_PATH)
+	old:Destroy()
+else
+	print("[StarGaze] Installing to " .. INSTALL_PATH)
+end
 
 local root = Instance.new("ModuleScript")
-root.Name = "StarGaze"
+root.Name = rootName
 root.Source = [[
 local Runtime = require(script.Core.Runtime)
 local Themes = require(script.Core.Themes)
 local Presets = require(script.Core.Presets)
-local StarGaze = {Version = "2.0.0", Themes = Themes, Presets = Presets}
-function StarGaze.create(options) return Runtime.new(options) end
+
+local StarGaze = {
+	Version = "2.0.0",
+	Themes = Themes,
+	Presets = Presets,
+}
+
+function StarGaze.create(options)
+	return Runtime.new(options)
+end
+
 return StarGaze
 ]]
-root.Parent = ReplicatedStorage
+root.Parent = parent
 
-local function folder(path)
-	local current = root
-	for part in string.gmatch(path, "[^/]+") do
-		local found = current:FindFirstChild(part)
-		if not found then
-			found = Instance.new("Folder")
-			found.Name = part
-			found.Parent = current
-		end
-		current = found
-	end
-	return current
-end
+local installed = 0
+local failed = 0
 
 for _, path in ipairs(files) do
-	local ok, source = pcall(function()
-		return HttpService:GetAsync(BASE .. "/" .. path, false)
-	end)
-	if ok and source ~= "" then
-		local directory = path:match("^(.*)/[^/]+$") or ""
-		local name = path:match("([^/]+)$"):gsub("%.lua$", "")
-		local module = Instance.new("ModuleScript")
-		module.Name = name
-		module.Source = source
-		module.Parent = folder(directory)
-		print("[StarGaze] Installed", path)
-	else
-		warn("[StarGaze] Failed", path, source)
+	local source, errorMessage = getSource(BASE_URL .. "/" .. path)
+
+	if not source then
+		failed += 1
+		warn("[StarGaze] Failed: " .. path)
+		warn("[StarGaze] " .. errorMessage)
+		continue
 	end
+
+	local directory = path:match("^(.*)/[^/]+$") or ""
+	local filename = path:match("([^/]+)$")
+	local moduleName = filename:gsub("%.lua$", "")
+	local moduleParent = getOrCreateFolder(root, directory)
+
+	local module = Instance.new("ModuleScript")
+	module.Name = moduleName
+	module.Source = source
+	module.Parent = moduleParent
+
+	installed += 1
+	print("[StarGaze] Installed " .. path)
 end
 
-print("[StarGaze] Installed to ReplicatedStorage.StarGaze")
+print("")
+print("StarGaze installation complete")
+print("Location: " .. INSTALL_PATH)
+print("Modules: " .. installed)
+print("Failed: " .. failed)
+
+if failed > 0 then
+	warn("[StarGaze] Some modules could not be installed. Check the Output window.")
+end

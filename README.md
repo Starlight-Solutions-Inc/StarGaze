@@ -168,3 +168,27 @@ StarGaze/
 StarGaze is free and open source under the MIT License.
 
 Copyright (c) 2026 Starlight Solutions, Inc.
+
+## Studio Bootstrap
+
+StarGaze includes a bootstrap script for installing or updating the framework from GitHub. The bootstrap downloads the current installer and executes it in Studio.
+
+Open `tools/StarGazeBootstrap.server.lua` and change `InstallPath` to the destination you want, for example `ReplicatedStorage.StarGaze` or `ReplicatedStorage.UI.StarGaze`. Then run the bootstrap from the Studio Command Bar.
+
+```lua
+local CONFIG = {
+    InstallPath = "ReplicatedStorage.StarGaze",
+}
+```
+
+The bootstrap uses the installer at:
+
+`https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua`
+
+The installer replaces an existing StarGaze installation at the selected path, so running the bootstrap again updates it. HTTP requests must be enabled in Game Settings. Because this workflow executes remotely fetched source, use a repository and branch you control and consider pinning releases for production.
+
+For the normal in-game API:
+
+```lua
+local StarGaze = require(game.ReplicatedStorage.StarGaze)
+```
