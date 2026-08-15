@@ -192,3 +192,21 @@ For the normal in-game API:
 ```lua
 local StarGaze = require(game.ReplicatedStorage.StarGaze)
 ```
+
+## Studio Bootstrap Installer
+
+StarGaze includes a small bootstrap that downloads the current installer from GitHub. The bootstrap does not contain the framework source itself. It loads `tools/InstallInStudio.lua`, and that installer downloads the current StarGaze source tree and places it into the configured Studio location.
+
+Configure `tools/StarGazeBootstrap.server.lua`:
+
+```lua
+local CONFIG = {
+    InstallPath = "ReplicatedStorage.StarGaze",
+    Mode = "Auto",
+    InstallerUrl = "https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua",
+}
+```
+
+`Auto` installs a missing copy or replaces the existing copy with the current GitHub version. `Install` only installs when the destination does not exist. `Update` only updates an existing installation.
+
+Run the bootstrap from Studio with HTTP requests enabled.

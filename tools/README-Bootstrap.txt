@@ -1,43 +1,44 @@
-StarGaze Bootstrap Installer
-============================
+StarGaze Bootstrap
+==================
 
-The bootstrap downloads the current StarGaze installer from GitHub and executes it with loadstring. The destination is controlled by one setting in the bootstrap file.
+The bootstrap is the only file you need to run. It downloads InstallInStudio.lua from the StarGaze GitHub repository and executes it with loadstring. The downloaded installer is responsible for discovering the repository files, creating the ModuleScript hierarchy, and installing or updating StarGaze.
 
 Configuration
 -------------
 
-Open StarGazeBootstrap.server.lua and edit:
+InstallPath controls where StarGaze is placed.
 
     InstallPath = "ReplicatedStorage.StarGaze"
 
-Examples:
+Other examples:
 
-    InstallPath = "ReplicatedStorage.StarGaze"
     InstallPath = "ReplicatedStorage.UI.StarGaze"
     InstallPath = "ServerScriptService.StarGaze"
-    InstallPath = "StarterPlayer.StarterPlayerScripts.StarGaze"
 
-Every parent in the path must already exist. The final StarGaze object is created or replaced by the installer.
+Mode controls the behavior:
 
-Setup
+    Mode = "Auto"
+
+Auto installs when missing and updates when already installed.
+
+    Mode = "Install"
+
+Install only; fails if the destination already exists.
+
+    Mode = "Update"
+
+Update only; fails if the destination does not exist.
+
+Requirements
+------------
+
+Enable Game Settings > Security > Allow HTTP Requests.
+
+Usage
 -----
 
-1. Enable Game Settings > Security > Allow HTTP Requests.
-2. Enable ServerScriptService.LoadStringEnabled.
-3. Put StarGazeBootstrap.server.lua in a server-side location while installing from Studio.
-4. Set CONFIG.InstallPath.
-5. Run the bootstrap.
-
-The bootstrap fetches:
+Run StarGazeBootstrap.server.lua from Studio. The bootstrap fetches the current installer from:
 
 https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua
 
-Updating
---------
-
-Run the same bootstrap again. The installer removes the existing StarGaze installation at the configured location and installs the latest source from the repository.
-
-Security
---------
-
-The bootstrap intentionally executes remotely downloaded Luau. Only use it with a repository and URL you control or trust. For published production games, pinning a release or committing a local installer is safer than executing a mutable branch.
+Run the same bootstrap again to receive the current StarGaze source from GitHub.

@@ -1,40 +1,41 @@
 local HttpService = game:GetService("HttpService")
-local ServerScriptService = game:GetService("ServerScriptService")
 
 local CONFIG = {
 	InstallPath = "ReplicatedStorage.StarGaze",
+	Mode = "Auto",
 	InstallerUrl = "https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua",
 }
 
-assert(HttpService.HttpEnabled, "[StarGaze] Enable Game Settings > Security > Allow HTTP Requests.")
-assert(ServerScriptService.LoadStringEnabled, "[StarGaze] Enable ServerScriptService.LoadStringEnabled before using this bootstrapper.")
+local function fail(message)
+	error("[StarGaze] " .. message, 2)
+end
+
+if not HttpService.HttpEnabled then
+	fail("HTTP requests are disabled. Enable Game Settings > Security > Allow HTTP Requests.")
+end
 
 local success, source = pcall(function()
 	return HttpService:GetAsync(CONFIG.InstallerUrl, false)
 end)
 
 if not success then
-	error("[StarGaze] Could not download the installer: " .. tostring(source), 2)
+	fail("Could not download the installer from GitHub: " .. tostring(source))
 end
 
-if source == "" then
-	error("[StarGaze] The installer returned an empty response.", 2)
+if type(source) ~= "string" or source == "" then
+	fail("GitHub returned an empty installer.")
 end
 
 local installer, compileError = loadstring(source, "StarGazeInstaller")
 
 if not installer then
-	error("[StarGaze] Installer compilation failed: " .. tostring(compileError), 2)
+	fail("The GitHub installer could not be compiled: " .. tostring(compileError))
 end
 
-_G.StarGazeInstallPath = CONFIG.InstallPath
-
-local ran, runtimeError = pcall(installer)
-
-_G.StarGazeInstallPath = nil
+local ran, result = pcall(installer, CONFIG)
 
 if not ran then
-	error("[StarGaze] Installer failed: " .. tostring(runtimeError), 2)
+	fail("The GitHub installer failed: " .. tostring(result))
 end
 
-print("[StarGaze] Bootstrap finished. Installed at " .. CONFIG.InstallPath)
+print("[StarGaze] Bootstrap completed.")
