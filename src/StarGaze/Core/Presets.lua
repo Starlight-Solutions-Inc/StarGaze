@@ -1,4 +1,16 @@
 return {
+	Styles = {
+		Soft = "Soft",
+		Sharp = "Sharp",
+		Glass = "Glass",
+		Dense = "Dense",
+	},
+	Templates = {
+		MinimalWindow = "MinimalWindow",
+		Dashboard = "Dashboard",
+		CompactPanel = "CompactPanel",
+		Inspector = "Inspector",
+	},
 	Primary = {
 		Color = "Accent",
 		HoverColor = "AccentHover",

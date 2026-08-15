@@ -4,6 +4,10 @@ local Players = game:GetService("Players")
 local Utils = require(script.Parent.Utils)
 local Themes = require(script.Parent.Themes)
 local Elements = require(script.Parent.Parent.Elements)
+local Plugins = require(script.Parent.Plugins)
+local Styles = require(script.Parent.Styles)
+local Templates = require(script.Parent.Templates)
+local Settings = require(script.Parent.Settings)
 
 local Runtime = {}
 Runtime.__index = Runtime
@@ -26,6 +30,10 @@ function Runtime.new(options)
 		ThemeListeners = {},
 		Windows = {},
 		Layers = {},
+		Styles = nil,
+		Templates = nil,
+		Settings = nil,		
+		Plugins = nil,
 	}, Runtime)
 
 	local parent = options.Parent or Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -40,6 +48,11 @@ function Runtime.new(options)
 	})
 
 	self:track(self.Gui)
+	self.Settings = Settings.new(self, options.Settings)
+	self.Options = Utils.merge(self.Options, self.Settings:all())
+	self.Styles = Styles.new(self)
+	self.Templates = Templates.new(self)
+	self.Plugins = Plugins.new(self)
 	self._elements = Elements.new(self)
 
 	return self
@@ -93,6 +106,54 @@ end
 
 function Runtime:getLayer(name)
 	return self.Layers[name]
+end
+
+
+function Runtime:configure(values)
+	self.Settings:update(values)
+	self.Options = Utils.merge(self.Options, values or {})
+	return self
+end
+
+function Runtime:setting(key, value)
+	if value == nil then
+		return self.Settings:get(key)
+	end
+	self.Settings:set(key, value)
+	self.Options[key] = value
+	return self
+end
+
+function Runtime:registerPlugin(plugin, options)
+	return self.Plugins:register(plugin, options)
+end
+
+function Runtime:unregisterPlugin(name)
+	return self.Plugins:unregister(name)
+end
+
+function Runtime:getPlugin(name)
+	return self.Plugins:get(name)
+end
+
+function Runtime:listPlugins()
+	return self.Plugins:list()
+end
+
+function Runtime:registerStyle(name, definition)
+	return self.Styles:register(name, definition)
+end
+
+function Runtime:applyStyle(instance, style, overrides)
+	return self.Styles:apply(instance, style, overrides)
+end
+
+function Runtime:registerTemplate(name, definition)
+	return self.Templates:register(name, definition)
+end
+
+function Runtime:template(name, overrides)
+	return self.Templates:resolve(name, overrides)
 end
 
 function Runtime:createFrame(parent, options)

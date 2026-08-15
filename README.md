@@ -267,3 +267,70 @@ print("[StarGaze Bootstrap] Installation/update completed.")
 `Auto` installs a missing copy or replaces the existing copy with the current GitHub version. `Install` only installs when the destination does not exist. `Update` only updates an existing installation.
 
 Run the bootstrap from Studio with HTTP requests enabled.
+
+
+## Customization
+
+StarGaze exposes a runtime settings system so a project can control the visual language from one place.
+
+```lua
+UI:configure({
+\tDensity = "Compact",
+\tStyle = "Glass",
+\tTemplate = "Inspector",
+\tAnimation = true,
+\tAnimationSpeed = 0.14,
+\tHover = true,
+\tPress = true,
+\tTooltips = true,
+\tShadows = true,
+\tTextScale = 0.95,
+\tSidebarWidth = 0.2,
+})
+```
+
+Built-in style profiles include `Soft`, `Sharp`, `Glass`, and `Dense`. Built-in templates include `MinimalWindow`, `Dashboard`, `CompactPanel`, and `Inspector`.
+
+## Plugins
+
+Plugins can add behavior, commands, components, theme hooks, or other project-specific functionality without editing the StarGaze core.
+
+```lua
+UI:registerPlugin({
+\tName = "DeveloperTools",
+\tSetup = function(context)
+\t\tlocal runtime = context.Runtime
+\t\truntime:notify({
+\t\t\tTitle = "Developer Tools",
+\t\t\tText = "Plugin loaded.",
+\t\t\tType = "Info",
+\t\t})
+\tend,
+\tDestroy = function(context)
+\tend,
+})
+```
+
+Plugins are isolated from the built-in component implementation and can store their own state through the supplied context.
+
+## Custom styles and templates
+
+```lua
+UI:registerStyle("Studio", {
+\tRadius = 8,
+\tStrokeTransparency = 0.2,
+\tHoverStrength = 0.04,
+\tPressScale = 0.985,
+\tShadow = true,
+})
+
+UI:registerTemplate("ControlPanel", {
+\tWindow = {
+\t\tSize = UDim2.fromScale(0.4, 0.7),
+\t\tCornerRadius = 10,
+\t},
+\tContent = {
+\t\tPadding = 0.018,
+\t},
+})
+```

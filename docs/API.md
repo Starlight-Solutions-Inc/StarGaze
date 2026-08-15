@@ -61,3 +61,38 @@ component:destroy()
 ```
 
 Specialized components expose additional methods such as `open`, `close`, `toggle`, `select`, `connect`, and `setText`.
+
+
+## Runtime customization
+
+### `UI:configure(values)`
+Updates multiple framework settings at once. Supported settings include `Density`, `Style`, `Template`, `CornerRadius`, `Animation`, `AnimationSpeed`, `Hover`, `Press`, `FocusRing`, `Tooltips`, `Glassmorphism`, `Shadows`, `Outline`, `OutlineTransparency`, `ModalOpacity`, `NotificationDuration`, `NotificationPosition`, `Responsive`, `ScaleMin`, `ScaleMax`, `Font`, `TextScale`, `IconStyle`, `IconSize`, `SidebarWidth`, `SectionSpacing`, `ComponentSpacing`, and `PagePadding`.
+
+### `UI:setting(key, value)`
+Gets a setting when `value` is omitted or changes a single setting when provided.
+
+### `UI:registerStyle(name, definition)`
+Adds a reusable style profile.
+
+### `UI:applyStyle(instance, style, overrides)`
+Applies a style profile to a GUI instance.
+
+### `UI:registerTemplate(name, definition)`
+Adds a reusable composition template for windows and other framework surfaces.
+
+### `UI:template(name, overrides)`
+Resolves a registered template.
+
+## Plugins
+
+### `UI:registerPlugin(plugin, options)`
+Registers a plugin. A plugin table requires a unique `Name` and may provide `Setup(context)` and `Destroy(context)`. The context contains the runtime and plugin-specific options.
+
+### `UI:unregisterPlugin(name)`
+Unloads a registered plugin and calls its `Destroy` callback.
+
+### `UI:getPlugin(name)`
+Returns a plugin context.
+
+### `UI:listPlugins()`
+Returns registered plugin names in installation order.
