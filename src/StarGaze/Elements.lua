@@ -1,4 +1,4 @@
-local Utils = require(script.Core.Utils)
+local Utils = require(script.Parent.Core.Utils)
 
 local Elements = {}
 Elements.__index = Elements
