@@ -207,63 +207,6 @@ local CONFIG = {
 }
 ```
 
-Full Installer:
-
-```lua
-local HttpService = game:GetService("HttpService")
-
-local CONFIG = {
-	InstallPath = "ReplicatedStorage.StarGaze",
-	Mode = "Auto",
-	InstallerUrl = "https://raw.githubusercontent.com/Starlight-Solutions-Inc/StarGaze/main/tools/InstallInStudio.lua",
-}
-
-local function request(url)
-	local success, result = pcall(function()
-		return HttpService:GetAsync(url, false)
-	end)
-
-	if not success then
-		error("[StarGaze Bootstrap] Failed to download installer:\n" .. tostring(result))
-	end
-
-	if not result or result == "" then
-		error("[StarGaze Bootstrap] Installer returned an empty response.")
-	end
-
-	return result
-end
-
-if not HttpService.HttpEnabled then
-	error("[StarGaze Bootstrap] HTTP requests are disabled. Enable Game Settings > Security > Allow HTTP Requests.")
-end
-
-local source = request(CONFIG.InstallerUrl)
-
-if type(loadstring) ~= "function" then
-	error("[StarGaze Bootstrap] loadstring is unavailable. Enable LoadStringEnabled in Studio/server settings.")
-end
-
-local installer, compileError = loadstring(source)
-
-if not installer then
-	error("[StarGaze Bootstrap] Installer could not be compiled:\n" .. tostring(compileError))
-end
-
-local success, runtimeError = pcall(function()
-	installer({
-		InstallPath = CONFIG.InstallPath,
-		Mode = CONFIG.Mode,
-	})
-end)
-
-if not success then
-	error("[StarGaze Bootstrap] Installer failed:\n" .. tostring(runtimeError))
-end
-
-print("[StarGaze Bootstrap] Installation/update completed.")
-```
-
 `Auto` installs a missing copy or replaces the existing copy with the current GitHub version. `Install` only installs when the destination does not exist. `Update` only updates an existing installation.
 
 Run the bootstrap from Studio with HTTP requests enabled.
