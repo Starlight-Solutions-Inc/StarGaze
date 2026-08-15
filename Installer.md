@@ -1,0 +1,335 @@
+# StarGaze
+
+StarGaze is a modular Luau UI framework designed for Roblox, with reusable components, theming, responsive layouts, presets, and interaction utilities.
+
+## Quick Installation
+
+If you want to install StarGaze directly into your Roblox experience without manually creating each ModuleScript, you can use the installer below.
+
+> **Requirements**
+>
+> * Enable **HTTP Requests** in your experience.
+> * The installer requires access to GitHub's raw content servers.
+> * The installer installs StarGaze into `ReplicatedStorage.StarGaze`.
+
+### Installer
+
+Run the following script in Roblox Studio's **Command Bar**:
+
+```lua
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local OWNER = "Starlight-Solutions-Inc"
+local REPOSITORY = "StarGaze"
+local BRANCH = "main"
+
+local BASE_URL = string.format(
+	"https://raw.githubusercontent.com/%s/%s/%s/src/StarGaze",
+	OWNER,
+	REPOSITORY,
+	BRANCH
+)
+
+local files = {
+	"Core/Runtime.lua",
+	"Core/Utils.lua",
+	"Core/Themes.lua",
+	"Core/Presets.lua",
+	"Core/Interaction.lua",
+	"Core/Responsive.lua",
+	"Elements.lua",
+
+	"Components/Button.lua",
+	"Components/Window.lua",
+	"Components/Toggle.lua",
+	"Components/Checkbox.lua",
+	"Components/Radio.lua",
+	"Components/Slider.lua",
+	"Components/Input.lua",
+	"Components/Progress.lua",
+	"Components/Dropdown.lua",
+	"Components/Tabs.lua",
+	"Components/Badge.lua",
+	"Components/Divider.lua",
+	"Components/Notification.lua",
+	"Components/Tooltip.lua",
+	"Components/Confirm.lua",
+	"Components/ContextMenu.lua",
+	"Components/CommandPalette.lua",
+	"Components/Keybind.lua",
+	"Components/Segmented.lua",
+	"Components/Accordion.lua",
+	"Components/ColorPicker.lua",
+}
+
+local function log(message)
+	print("[StarGaze] " .. message)
+end
+
+local function fail(message)
+	warn("[StarGaze] " .. message)
+end
+
+local function getSource(url)
+	local success, result = pcall(function()
+		return HttpService:GetAsync(url, false)
+	end)
+
+	if not success then
+		return nil, tostring(result)
+	end
+
+	if type(result) ~= "string" or result == "" then
+		return nil, "GitHub returned an empty response."
+	end
+
+	return result
+end
+
+local function getOrCreateFolder(parent, path)
+	local current = parent
+
+	if path == "" then
+		return current
+	end
+
+	for part in string.gmatch(path, "[^/]+") do
+		local existing = current:FindFirstChild(part)
+
+		if existing then
+			if not existing:IsA("Folder") then
+				return nil, part .. " already exists and is not a Folder."
+			end
+
+			current = existing
+		else
+			local folder = Instance.new("Folder")
+			folder.Name = part
+			folder.Parent = current
+			current = folder
+		end
+	end
+
+	return current
+end
+
+log("Starting installation...")
+log("Source: " .. OWNER .. "/" .. REPOSITORY .. "@" .. BRANCH)
+
+if not HttpService.HttpEnabled then
+	fail("HTTP requests are disabled.")
+	fail("Enable Game Settings > Security > Allow HTTP Requests.")
+	return
+end
+
+local existing = ReplicatedStorage:FindFirstChild("StarGaze")
+
+if existing then
+	log("Removing existing StarGaze installation...")
+	existing:Destroy()
+end
+
+local root = Instance.new("ModuleScript")
+root.Name = "StarGaze"
+root.Source = [[
+local Runtime = require(script.Core.Runtime)
+local Themes = require(script.Core.Themes)
+local Presets = require(script.Core.Presets)
+
+local StarGaze = {
+	Version = "2.0.0",
+	Themes = Themes,
+	Presets = Presets,
+}
+
+function StarGaze.create(options)
+	return Runtime.new(options)
+end
+
+return StarGaze
+]]
+
+root.Parent = ReplicatedStorage
+
+log("Created ReplicatedStorage.StarGaze")
+
+local installed = 0
+local failed = 0
+
+for _, path in ipairs(files) do
+	local url = BASE_URL .. "/" .. path
+
+	log("Downloading " .. path)
+
+	local source, errorMessage = getSource(url)
+
+	if not source then
+		failed += 1
+		fail("Could not download " .. path)
+		fail("URL: " .. url)
+		fail("Reason: " .. errorMessage)
+		continue
+	end
+
+	local directory = path:match("^(.*)/[^/]+$") or ""
+	local filename = path:match("([^/]+)$")
+	local name = filename:gsub("%.lua$", "")
+
+	local parent, folderError = getOrCreateFolder(root, directory)
+
+	if not parent then
+		failed += 1
+		fail("Could not create " .. directory)
+		fail(folderError)
+		continue
+	end
+
+	local existingModule = parent:FindFirstChild(name)
+
+	if existingModule then
+		existingModule:Destroy()
+	end
+
+	local module = Instance.new("ModuleScript")
+	module.Name = name
+	module.Source = source
+	module.Parent = parent
+
+	installed += 1
+
+	log("Installed " .. path)
+end
+
+print("")
+print("==========================================")
+print("          StarGaze Installation")
+print("==========================================")
+print("Installed modules: " .. installed)
+print("Failed modules:    " .. failed)
+print("Location:          ReplicatedStorage.StarGaze")
+print("")
+
+if failed == 0 then
+	log("Installation completed successfully.")
+	log("Usage:")
+	print("")
+	print('local StarGaze = require(game.ReplicatedStorage.StarGaze)')
+else
+	fail("Installation completed with " .. failed .. " failure(s).")
+	fail("Check the Output window above for the affected files.")
+end
+```
+
+### What the installer does
+
+The installer automatically:
+
+1. Checks whether HTTP requests are enabled.
+2. Downloads the StarGaze source files from the configured GitHub branch.
+3. Creates the required folder structure.
+4. Creates `ReplicatedStorage.StarGaze`.
+5. Installs every StarGaze module into its corresponding location.
+6. Removes an existing StarGaze installation before installing the new version.
+7. Reports successful and failed downloads in the Output window.
+
+### Resulting structure
+
+After installation, your game will contain:
+
+```text
+ReplicatedStorage
+└── StarGaze
+    ├── Core
+    │   ├── Runtime
+    │   ├── Utils
+    │   ├── Themes
+    │   ├── Presets
+    │   ├── Interaction
+    │   └── Responsive
+    │
+    ├── Components
+    │   ├── Button
+    │   ├── Window
+    │   ├── Toggle
+    │   ├── Checkbox
+    │   ├── Radio
+    │   ├── Slider
+    │   ├── Input
+    │   ├── Progress
+    │   ├── Dropdown
+    │   ├── Tabs
+    │   ├── Badge
+    │   ├── Divider
+    │   ├── Notification
+    │   ├── Tooltip
+    │   ├── Confirm
+    │   ├── ContextMenu
+    │   ├── CommandPalette
+    │   ├── Keybind
+    │   ├── Segmented
+    │   ├── Accordion
+    │   └── ColorPicker
+    │
+    ├── Elements
+    └── StarGaze
+```
+
+## Using StarGaze
+
+Once installation has completed, require the framework from `ReplicatedStorage`:
+
+```lua
+local StarGaze = require(game.ReplicatedStorage.StarGaze)
+
+local ui = StarGaze.create({
+	-- configuration
+})
+```
+
+The framework exposes the core runtime through `StarGaze.create()`, while themes and presets are available directly through the main module.
+
+```lua
+local StarGaze = require(game.ReplicatedStorage.StarGaze)
+
+local themes = StarGaze.Themes
+local presets = StarGaze.Presets
+```
+
+## Updating StarGaze
+
+To update an existing installation, run the installer again.
+
+The installer removes the existing `ReplicatedStorage.StarGaze` instance and downloads the current files from the configured GitHub branch.
+
+> **Important:** Any manual changes made directly to the installed StarGaze modules will be lost when the installer is run again.
+
+## Troubleshooting
+
+### HTTP requests are disabled
+
+Go to:
+
+**Game Settings → Security → Allow HTTP Requests**
+
+Enable the setting and run the installer again.
+
+### A module failed to download
+
+Check the Output window for the affected file and URL. A failed download generally indicates that the requested file does not exist at the configured GitHub path or that Roblox could not access the resource.
+
+### StarGaze already exists
+
+This is expected when updating an installation. The installer removes the existing `StarGaze` folder before installing the current version.
+
+### Installation completed with failures
+
+The installer continues downloading the remaining modules even if an individual file fails. Review the Output window to identify the failed files and run the installer again after resolving the underlying issue.
+
+## Version
+
+**Current installer version:** `2.0.0`
+
+**Source:** `Starlight-Solutions-Inc/StarGaze`
+
+**Branch:** `main`
