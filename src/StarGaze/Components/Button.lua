@@ -68,6 +68,13 @@ function Button:setText(text)
 	return self
 end
 
+function Button:setColor(value)
+	self.Runtime:animate(self.Instance, {
+		BackgroundColor3 = Utils.color(value, self.Runtime.Theme),
+	}, 0.12)
+	return self
+end
+
 function Button:setVisible(value)
 	self.Instance.Visible = value == true
 	return self

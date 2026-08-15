@@ -1,15 +1,16 @@
 # Changelog
 
+## 2.1.1
+
+- Reworked the showcase around scale-based composition and automatic scrolling.
+- Added `Runtime:scroll()` for vertically stacked, overflow-safe layouts.
+- Reduced fixed positioning in the example UI.
+- Added `Button:setColor()` for navigation and state styling.
+- Simplified the showcase visual language and information hierarchy.
+- Improved the documentation for scroll containers.
+
 ## 2.1.0
 
-- Added runtime settings, styles, templates and plugin lifecycle APIs.
-- Added responsive scaling helpers.
-- Expanded the component library.
-- Reworked the Studio bootstrap and installer.
-- Installer now downloads the complete source set before replacing an existing installation.
-- Fixed theme alias handling and input color references.
-- Fixed plugin source syntax.
-- Improved context menu positioning.
-- Improved accordion behavior.
-- Updated the showcase to use a real application-style layout.
-- Added a clearer Studio installation guide.
+- Expanded customization, styles, templates and plugins.
+- Added runtime settings and responsive helpers.
+- Improved installer and bootstrap workflow.

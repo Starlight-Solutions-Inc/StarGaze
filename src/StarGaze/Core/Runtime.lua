@@ -172,6 +172,10 @@ function Runtime:createContainer(parent, options)
 	return self._elements:container(parent, options)
 end
 
+function Runtime:scroll(parent, options)
+	return self._elements:scroll(parent, options)
+end
+
 function Runtime:button(parent, options)
 	return require(script.Parent.Parent.Components.Button).new(self, parent, options)
 end

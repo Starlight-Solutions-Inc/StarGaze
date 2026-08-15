@@ -36,6 +36,46 @@ function Elements:frame(parent, options)
 	return frame
 end
 
+function Elements:scroll(parent, options)
+	options = options or {}
+	local theme = self.Runtime.Theme
+	local scroll = Utils.create("ScrollingFrame", {
+		Name = options.Name or "Scroll",
+		BackgroundColor3 = Utils.color(options.Color or "Background", theme),
+		BackgroundTransparency = options.Transparency or 0,
+		BorderSizePixel = 0,
+		Size = options.Size or UDim2.fromScale(1, 1),
+		Position = options.Position or UDim2.fromScale(0, 0),
+		AnchorPoint = options.AnchorPoint or Vector2.zero,
+		Visible = options.Visible ~= false,
+		ClipsDescendants = options.ClipsDescendants ~= false,
+		CanvasSize = UDim2.fromScale(0, 0),
+		AutomaticCanvasSize = options.AutomaticCanvasSize or Enum.AutomaticSize.Y,
+		ScrollingDirection = options.ScrollingDirection or Enum.ScrollingDirection.Y,
+		ScrollBarThickness = options.ScrollBarThickness or 4,
+		ScrollBarImageColor3 = Utils.color(options.ScrollBarColor or "Border", theme),
+		ScrollBarImageTransparency = options.ScrollBarTransparency or 0.25,
+		ScrollingEnabled = options.ScrollingEnabled ~= false,
+		ElasticBehavior = Enum.ElasticBehavior.WhenScrollable,
+		ZIndex = options.ZIndex or 1,
+		Parent = parent or self.Runtime.Gui,
+	})
+	if options.Radius ~= 0 then
+		Utils.corner(scroll, options.Radius or 10)
+	end
+	if options.Stroke then
+		Utils.stroke(scroll, Utils.color(options.StrokeColor or "Border", theme), options.StrokeTransparency or 0, options.StrokeThickness or 1)
+	end
+	if options.Padding then
+		Utils.padding(scroll, options.Padding.Top, options.Padding.Right, options.Padding.Bottom, options.Padding.Left)
+	end
+	if options.Layout then
+		Utils.list(scroll, options.Layout)
+	end
+	self.Runtime:track(scroll)
+	return scroll
+end
+
 function Elements:text(parent, text, options)
 	options = options or {}
 	local element = Utils.text(parent or self.Runtime.Gui, text, self.Runtime.Theme, {

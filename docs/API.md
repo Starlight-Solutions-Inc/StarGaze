@@ -77,3 +77,23 @@ UI:responsive(window.Instance, {
 	Max = 1.04,
 })
 ```
+
+
+## Scrolling containers
+
+```lua
+local content = UI:scroll(parent, {
+    Size = UDim2.fromScale(1, 1),
+    Padding = {
+        Top = 12,
+        Right = 16,
+        Bottom = 24,
+        Left = 16,
+    },
+    Layout = {
+        Padding = UDim.new(0.02, 0),
+    },
+})
+```
+
+Scrolling containers use `AutomaticCanvasSize` by default so stacked content can grow without relying on hard-coded canvas sizes.

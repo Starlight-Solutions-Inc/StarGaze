@@ -7,6 +7,7 @@ local UI = StarGaze.create({
 	Settings = {
 		Style = "Soft",
 		Density = "Comfortable",
+		Animation = true,
 		AnimationSpeed = 0.16,
 		Tooltips = true,
 		Responsive = true,
@@ -16,241 +17,278 @@ local UI = StarGaze.create({
 local window = UI:window({
 	Name = "Showcase",
 	Title = "StarGaze",
-	Subtitle = "A practical Roblox UI framework",
-	Size = UDim2.fromScale(0.78, 0.8),
+	Subtitle = "UI framework for Roblox",
+	Size = UDim2.fromScale(0.82, 0.82),
 	Position = UDim2.fromScale(0.5, 0.5),
 })
 
 UI:responsive(window.Instance, {
 	BaseWidth = 1440,
-	Min = 0.78,
+	Min = 0.76,
 	Max = 1.04,
 })
 
-local content = window.Content
-content.BackgroundColor3 = UI.Theme.Background
-
-local sidebar = UI:createFrame(content, {
-	Name = "Sidebar",
-	Size = UDim2.fromScale(0.19, 1),
-	Color = "Surface",
-	Radius = 12,
-	Stroke = true,
-	StrokeColor = "Border",
-	StrokeTransparency = 0.55,
-})
-
-local main = UI:createFrame(content, {
-	Name = "Main",
-	Size = UDim2.fromScale(0.775, 1),
-	Position = UDim2.fromScale(0.22, 0),
+local shell = UI:createFrame(window.Content, {
+	Name = "Shell",
+	Size = UDim2.fromScale(1, 1),
 	Color = "Background",
 	Radius = 0,
 	ClipsDescendants = true,
 })
 
-UI:createText(sidebar, "STARGAZE", {
-	Size = UDim2.fromScale(0.84, 0.06),
-	Position = UDim2.fromScale(0.08, 0.055),
+local sidebar = UI:createFrame(shell, {
+	Name = "Sidebar",
+	Size = UDim2.fromScale(0.19, 1),
+	Color = "Surface",
+	Radius = 10,
+	Stroke = true,
+	StrokeColor = "BorderSoft",
+	StrokeTransparency = 0.25,
+})
+
+local main = UI:createFrame(shell, {
+	Name = "Main",
+	Size = UDim2.fromScale(0.795, 1),
+	Position = UDim2.fromScale(0.205, 0),
+	Color = "Background",
+	Radius = 0,
+	ClipsDescendants = true,
+})
+
+local brand = UI:createContainer(sidebar, {
+	Size = UDim2.fromScale(0.84, 0.13),
+	Position = UDim2.fromScale(0.08, 0.045),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {
+		Padding = UDim.new(0, 0),
+	},
+})
+
+UI:createText(brand, "STARGAZE", {
+	Size = UDim2.fromScale(1, 0.44),
 	TextSize = 13,
 	Font = Enum.Font.GothamBold,
 })
 
-UI:createText(sidebar, "FRAMEWORK", {
-	Size = UDim2.fromScale(0.84, 0.035),
-	Position = UDim2.fromScale(0.08, 0.112),
-	TextSize = 8,
+UI:createText(brand, "BY STARLIGHT SOLUTIONS", {
+	Size = UDim2.fromScale(1, 0.32),
+	TextSize = 7,
 	Font = Enum.Font.GothamMedium,
-	Color = "Subtext",
+	Color = "Muted",
+})
+
+UI:divider(brand, {
+	Size = UDim2.fromScale(1, 0.01),
+})
+
+local nav = UI:createContainer(sidebar, {
+	Size = UDim2.fromScale(0.84, 0.52),
+	Position = UDim2.fromScale(0.08, 0.2),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {
+		Padding = UDim.new(0.018, 0),
+	},
 })
 
 local pages = {}
-local navItems = {}
+local navButtons = {}
 
-local function page(name)
-	local result = UI:createFrame(main, {
+local function makePage(name)
+	local scroll = UI:scroll(main, {
 		Name = name,
 		Size = UDim2.fromScale(1, 1),
 		Color = "Background",
 		Radius = 0,
 		Visible = false,
-		ClipsDescendants = true,
+		ScrollBarThickness = 3,
+		ScrollBarColor = "Border",
+		ScrollBarTransparency = 0.5,
+		Padding = {
+			Top = 0,
+			Right = 18,
+			Bottom = 26,
+			Left = 18,
+		},
+		Layout = {
+			Padding = UDim.new(0.02, 0),
+		},
 	})
-	pages[name] = result
-	return result
+	pages[name] = scroll
+	return scroll
+end
+
+local function navButton(name, label, active)
+	local button = UI:button(nav, {
+		Text = label,
+		Color = active and "SurfaceRaised" or "Surface",
+		Size = UDim2.fromScale(1, 0.085),
+		CornerRadius = 8,
+		TextColor = active and "Text" or "Subtext",
+		Hover = true,
+		Press = true,
+	})
+
+	navButtons[name] = button
+	return button
 end
 
 local function selectPage(name)
-	for pageName, current in pairs(pages) do
-		current.Visible = pageName == name
+	for pageName, page in pairs(pages) do
+		page.Visible = pageName == name
 	end
 
-	for itemName, item in pairs(navItems) do
-		local active = itemName == name
-		UI:animate(item, {
-			BackgroundColor3 = active and UI.Theme.SurfaceAlt or UI.Theme.Surface,
-			BackgroundTransparency = active and 0 or 1,
-		}, 0.12)
-		item.Marker.Visible = active
+	for buttonName, button in pairs(navButtons) do
+		local active = buttonName == name
+		button:setColor(active and "SurfaceRaised" or "Surface")
+		button.Text.TextColor3 = active and UI.Theme.Text or UI.Theme.Subtext
 	end
 end
 
-local function navigation(name, title, y)
-	local holder = UI:createFrame(sidebar, {
-		Name = name .. "Navigation",
-		Size = UDim2.fromScale(0.84, 0.065),
-		Position = UDim2.fromScale(0.08, y),
-		Color = "Surface",
-		Radius = 8,
+local function heading(parent, title, description)
+	local block = UI:createContainer(parent, {
+		Size = UDim2.fromScale(1, 0.105),
+		Color = "Background",
+		Radius = 0,
+		Layout = {
+			Padding = UDim.new(0, 2),
+		},
 	})
 
-	local button = Instance.new("TextButton")
-	button.BackgroundTransparency = 1
-	button.BorderSizePixel = 0
-	button.Size = UDim2.fromScale(1, 1)
-	button.Text = ""
-	button.AutoButtonColor = false
-	button.Parent = holder
-
-	local marker = UI:createFrame(holder, {
-		Name = "Marker",
-		Size = UDim2.fromScale(0.018, 0.44),
-		Position = UDim2.fromScale(0.03, 0.28),
-		Color = "Accent",
-		Radius = 99,
-		Visible = false,
+	UI:createText(block, title, {
+		Size = UDim2.fromScale(1, 0.58),
+		TextSize = 21,
+		Font = Enum.Font.GothamBold,
 	})
 
-	UI:createText(holder, title, {
-		Size = UDim2.fromScale(0.78, 1),
-		Position = UDim2.fromScale(0.12, 0),
-		TextSize = 11,
+	UI:createText(block, description, {
+		Size = UDim2.fromScale(1, 0.34),
+		TextSize = 9,
 		Color = "Subtext",
+		TextWrapped = true,
 	})
 
-	UI:connect(button.Activated:Connect(function()
-		selectPage(name)
-	end))
-
-	navItems[name] = {
-		Holder = holder,
-		Button = button,
-		Marker = marker,
-	}
+	return block
 end
 
-navigation("Overview", "Overview", 0.18)
-navigation("Controls", "Controls", 0.255)
-navigation("Themes", "Themes", 0.33)
-navigation("Components", "Components", 0.405)
-navigation("About", "About", 0.48)
+local overview = makePage("Overview")
+local controls = makePage("Controls")
+local themes = makePage("Themes")
+local components = makePage("Components")
+local about = makePage("About")
 
-UI:createText(sidebar, "Starlight Solutions, Inc.", {
-	Size = UDim2.fromScale(0.84, 0.045),
-	Position = UDim2.fromScale(0.08, 0.92),
-	TextSize = 8,
-	Color = "Subtext",
+local overviewButton = navButton("Overview", "Overview", true)
+local controlsButton = navButton("Controls", "Controls", false)
+local themesButton = navButton("Themes", "Themes", false)
+local componentsButton = navButton("Components", "Components", false)
+local aboutButton = navButton("About", "About", false)
+	overviewButton:connect(function() selectPage("Overview") end)
+controlsButton:connect(function() selectPage("Controls") end)
+themesButton:connect(function() selectPage("Themes") end)
+componentsButton:connect(function() selectPage("Components") end)
+aboutButton:connect(function() selectPage("About") end)
+
+UI:createText(sidebar, "MIT LICENSE", {
+	Size = UDim2.fromScale(0.84, 0.04),
+	Position = UDim2.fromScale(0.08, 0.935),
+	TextSize = 7,
+	Color = "Muted",
 })
 
-local overview = page("Overview")
+heading(overview, "Overview", "A practical showcase of the StarGaze design system.")
 
-UI:createText(overview, "Overview", {
-	Size = UDim2.fromScale(0.9, 0.07),
-	Position = UDim2.fromScale(0.03, 0.025),
-	TextSize = 21,
-	Font = Enum.Font.GothamBold,
+local statusRow = UI:createContainer(overview, {
+	Size = UDim2.fromScale(1, 0.15),
+	Color = "Background",
+	Radius = 0,
+	Layout = {
+		Direction = Enum.FillDirection.Horizontal,
+		Padding = UDim.new(0.016, 0),
+	},
 })
 
-UI:createText(overview, "A restrained example of how StarGaze can be composed into a real interface.", {
-	Size = UDim2.fromScale(0.9, 0.045),
-	Position = UDim2.fromScale(0.03, 0.092),
-	TextSize = 10,
-	Color = "Subtext",
+local function metric(parent, label, value, accent)
+	local card = UI:card(parent, {
+		Size = UDim2.fromScale(0.322, 1),
+		Color = "Surface",
+		Radius = 10,
+		StrokeTransparency = 0.6,
+	})
+
+	UI:createText(card, label, {
+		Size = UDim2.fromScale(0.82, 0.29),
+		Position = UDim2.fromScale(0.08, 0.16),
+		TextSize = 8,
+		Color = "Muted",
+	})
+
+	UI:createText(card, value, {
+		Size = UDim2.fromScale(0.82, 0.38),
+		Position = UDim2.fromScale(0.08, 0.46),
+		TextSize = 17,
+		Font = Enum.Font.GothamBold,
+		Color = accent or "Text",
+	})
+
+	return card
+end
+
+metric(statusRow, "RUNTIME", "READY", "Success")
+metric(statusRow, "THEMES", "04", "Accent")
+metric(statusRow, "COMPONENTS", "20+", "Text")
+
+local previewRow = UI:createContainer(overview, {
+	Size = UDim2.fromScale(1, 0.44),
+	Color = "Background",
+	Radius = 0,
+	Layout = {
+		Direction = Enum.FillDirection.Horizontal,
+		Padding = UDim.new(0.018, 0),
+	},
 })
 
-local status = UI:card(overview, {
-	Size = UDim2.fromScale(0.94, 0.14),
-	Position = UDim2.fromScale(0.03, 0.16),
+local preview = UI:card(previewRow, {
+	Size = UDim2.fromScale(0.62, 1),
 	Color = "Surface",
 	Radius = 11,
-	StrokeTransparency = 0.55,
+	StrokeTransparency = 0.6,
 })
 
-UI:createText(status, "READY", {
-	Size = UDim2.fromScale(0.13, 0.26),
-	Position = UDim2.fromScale(0.04, 0.17),
-	TextSize = 9,
-	Font = Enum.Font.GothamBold,
-	Color = "Success",
-})
-
-UI:createText(status, "StarGaze runtime initialized", {
-	Size = UDim2.fromScale(0.62, 0.34),
-	Position = UDim2.fromScale(0.04, 0.48),
-	TextSize = 13,
-	Font = Enum.Font.GothamMedium,
-})
-
-UI:createText(status, "Themes, components, templates and plugins are available.", {
-	Size = UDim2.fromScale(0.62, 0.24),
-	Position = UDim2.fromScale(0.34, 0.51),
-	TextSize = 9,
-	Color = "Subtext",
-})
-
-UI:badge(status, {
-	Text = "v2.1",
-	Color = "Accent",
-	Size = UDim2.fromScale(0.13, 0.34),
-	Position = UDim2.fromScale(0.82, 0.33),
-})
-
-local left = UI:card(overview, {
-	Size = UDim2.fromScale(0.58, 0.55),
-	Position = UDim2.fromScale(0.03, 0.34),
-	Color = "Surface",
-	Radius = 12,
-})
-
-UI:createText(left, "Live preview", {
-	Size = UDim2.fromScale(0.88, 0.08),
-	Position = UDim2.fromScale(0.06, 0.06),
-	TextSize = 13,
-	Font = Enum.Font.GothamMedium,
-})
-
-local preview = UI:card(left, {
-	Size = UDim2.fromScale(0.88, 0.72),
-	Position = UDim2.fromScale(0.06, 0.18),
+local previewInner = UI:createContainer(preview, {
+	Size = UDim2.fromScale(0.88, 0.84),
+	Position = UDim2.fromScale(0.06, 0.08),
 	Color = "Background",
-	Radius = 10,
-	StrokeTransparency = 0.65,
+	Radius = 9,
+	Padding = {
+		Top = 12,
+		Right = 14,
+		Bottom = 12,
+		Left = 14,
+	},
+	Layout = {
+		Padding = UDim.new(0, 7),
+	},
 })
 
-UI:createText(preview, "Account settings", {
-	Size = UDim2.fromScale(0.84, 0.1),
-	Position = UDim2.fromScale(0.07, 0.08),
+UI:createText(previewInner, "Live preview", {
+	Size = UDim2.fromScale(1, 0.12),
 	TextSize = 13,
 	Font = Enum.Font.GothamMedium,
 })
 
-UI:createText(preview, "Small, focused controls work better than filling every corner with cards.", {
-	Size = UDim2.fromScale(0.84, 0.18),
-	Position = UDim2.fromScale(0.07, 0.22),
+UI:createText(previewInner, "Components should disappear into the interface. The framework should not.", {
+	Size = UDim2.fromScale(1, 0.16),
 	TextSize = 9,
-	TextWrapped = true,
-	TextYAlignment = Enum.TextYAlignment.Top,
 	Color = "Subtext",
+	TextWrapped = true,
 })
 
-local previewToggle = UI:toggle(preview, {
+UI:toggle(previewInner, {
 	Text = "Enable notifications",
 	Default = true,
-	Size = UDim2.fromScale(0.84, 0.14),
-	Position = UDim2.fromScale(0.07, 0.45),
-})
-
-previewToggle:changed(function(value)
+	Size = UDim2.fromScale(1, 0.16),
+}):changed(function(value)
 	UI:notify({
 		Title = "Preview setting",
 		Text = value and "Notifications enabled." or "Notifications disabled.",
@@ -258,282 +296,327 @@ previewToggle:changed(function(value)
 	})
 end)
 
-UI:button(preview, {
+UI:slider(previewInner, {
+	Text = "Interface scale",
+	Min = 0.8,
+	Max = 1.1,
+	Default = 1,
+	Size = UDim2.fromScale(1, 0.18),
+}):format(function(value)
+	return string.format("%.0f%%", value * 100)
+end)
+
+UI:button(previewInner, {
 	Text = "Test action",
-	Size = UDim2.fromScale(0.38, 0.13),
-	Position = UDim2.fromScale(0.07, 0.72),
+	Size = UDim2.fromScale(1, 0.16),
 	OnClick = function()
 		UI:notify({
-			Title = "Action completed",
-			Text = "The preview button fired normally.",
+			Title = "Preview",
+			Text = "The component event fired correctly.",
 			Type = "Success",
 		})
 	end,
 })
 
-local right = UI:card(overview, {
-	Size = UDim2.fromScale(0.33, 0.55),
-	Position = UDim2.fromScale(0.64, 0.34),
+local notes = UI:card(previewRow, {
+	Size = UDim2.fromScale(0.362, 1),
 	Color = "Surface",
-	Radius = 12,
+	Radius = 11,
+	StrokeTransparency = 0.6,
 })
 
-UI:createText(right, "Configuration", {
-	Size = UDim2.fromScale(0.84, 0.08),
-	Position = UDim2.fromScale(0.08, 0.06),
+local notesInner = UI:createContainer(notes, {
+	Size = UDim2.fromScale(0.84, 0.82),
+	Position = UDim2.fromScale(0.08, 0.09),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {
+		Padding = UDim.new(0, 8),
+	},
+})
+
+UI:createText(notesInner, "Design notes", {
+	Size = UDim2.fromScale(1, 0.13),
 	TextSize = 13,
 	Font = Enum.Font.GothamMedium,
 })
 
-UI:createText(right, "Theme", {
-	Size = UDim2.fromScale(0.36, 0.06),
-	Position = UDim2.fromScale(0.08, 0.19),
-	TextSize = 9,
-	Color = "Subtext",
-})
+local notesData = {
+	{"LAYOUT", "Use scale for composition; reserve offsets for fine detail."},
+	{"HIERARCHY", "Keep one clear title, one supporting line, then the controls."},
+	{"MOTION", "Animate transitions, not every pixel on the screen."},
+}
 
-UI:createText(right, "Obsidian", {
-	Size = UDim2.fromScale(0.44, 0.06),
-	Position = UDim2.fromScale(0.48, 0.19),
-	TextSize = 10,
-	TextXAlignment = Enum.TextXAlignment.Right,
-})
+for _, item in ipairs(notesData) do
+	local line = UI:createContainer(notesInner, {
+		Size = UDim2.fromScale(1, 0.19),
+		Color = "SurfaceAlt",
+		Radius = 7,
+		Padding = {
+			Top = 7,
+			Right = 8,
+			Bottom = 7,
+			Left = 8,
+		},
+		Layout = {
+			Padding = UDim.new(0, 2),
+		},
+	})
 
-UI:createText(right, "Density", {
-	Size = UDim2.fromScale(0.36, 0.06),
-	Position = UDim2.fromScale(0.08, 0.31),
-	TextSize = 9,
-	Color = "Subtext",
-})
+	UI:createText(line, item[1], {
+		Size = UDim2.fromScale(1, 0.36),
+		TextSize = 7,
+		Font = Enum.Font.GothamBold,
+		Color = "Muted",
+	})
 
-UI:createText(right, "Comfortable", {
-	Size = UDim2.fromScale(0.44, 0.06),
-	Position = UDim2.fromScale(0.48, 0.31),
-	TextSize = 10,
-	TextXAlignment = Enum.TextXAlignment.Right,
-})
+	UI:createText(line, item[2], {
+		Size = UDim2.fromScale(1, 0.54),
+		TextSize = 8,
+		TextWrapped = true,
+		Color = "Subtext",
+	})
+end
 
-UI:progress(right, {
-	Text = "System coverage",
-	Default = 0.88,
-	Size = UDim2.fromScale(0.84, 0.12),
-	Position = UDim2.fromScale(0.08, 0.46),
-})
-
-UI:button(right, {
-	Text = "Open command palette",
-	Color = "SurfaceAlt",
-	Size = UDim2.fromScale(0.84, 0.12),
-	Position = UDim2.fromScale(0.08, 0.64),
-	OnClick = function()
-		palette:open()
-	end,
-})
-
-local controls = page("Controls")
-UI:createText(controls, "Controls", {
-	Size = UDim2.fromScale(0.9, 0.07),
-	Position = UDim2.fromScale(0.03, 0.025),
-	TextSize = 21,
-	Font = Enum.Font.GothamBold,
-})
-UI:createText(controls, "Use the same component APIs in your own layouts.", {
-	Size = UDim2.fromScale(0.9, 0.045),
-	Position = UDim2.fromScale(0.03, 0.092),
-	TextSize = 10,
-	Color = "Subtext",
-})
-
-local controlPanel = UI:card(controls, {
-	Size = UDim2.fromScale(0.94, 0.7),
-	Position = UDim2.fromScale(0.03, 0.17),
+local activity = UI:card(overview, {
+	Size = UDim2.fromScale(1, 0.25),
 	Color = "Surface",
-	Radius = 12,
+	Radius = 11,
+	StrokeTransparency = 0.6,
 })
 
-UI:toggle(controlPanel, {
-	Text = "Animated interactions",
-	Default = true,
-	Size = UDim2.fromScale(0.92, 0.11),
-	Position = UDim2.fromScale(0.04, 0.08),
-}):changed(function(value)
+local activityInner = UI:createContainer(activity, {
+	Size = UDim2.fromScale(0.94, 0.82),
+	Position = UDim2.fromScale(0.03, 0.09),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {
+		Padding = UDim.new(0.018, 0),
+	},
+})
+
+UI:createText(activityInner, "Included in the framework", {
+	Size = UDim2.fromScale(1, 0.15),
+	TextSize = 13,
+	Font = Enum.Font.GothamMedium,
+})
+
+local included = UI:createContainer(activityInner, {
+	Size = UDim2.fromScale(1, 0.7),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {
+		Direction = Enum.FillDirection.Horizontal,
+		Padding = UDim.new(0.016, 0),
+		Wraps = true,
+	},
+})
+
+for _, value in ipairs({"Themes", "Styles", "Templates", "Plugins", "Responsive UI", "Notifications", "Command Palette", "20+ controls"}) do
+	UI:badge(included, {
+		Text = value,
+		Color = "SurfaceAlt",
+		Size = UDim2.fromScale(0.23, 0.38),
+	})
+end
+
+heading(controls, "Controls", "The same primitives can be arranged into simple or dense interfaces.")
+
+local controlColumns = UI:createContainer(controls, {
+	Size = UDim2.fromScale(1, 0.68),
+	Color = "Background",
+	Radius = 0,
+	Layout = {
+		Direction = Enum.FillDirection.Horizontal,
+		Padding = UDim.new(0.018, 0),
+	},
+})
+
+local controlLeft = UI:card(controlColumns, {
+	Size = UDim2.fromScale(0.49, 1),
+	Color = "Surface",
+	Radius = 11,
+	StrokeTransparency = 0.6,
+})
+
+local leftStack = UI:createContainer(controlLeft, {
+	Size = UDim2.fromScale(0.88, 0.9),
+	Position = UDim2.fromScale(0.06, 0.05),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {Padding = UDim.new(0.018, 0)},
+})
+
+UI:createText(leftStack, "Motion", {Size = UDim2.fromScale(1, 0.1), TextSize = 13, Font = Enum.Font.GothamMedium})
+UI:toggle(leftStack, {Text = "Animated interactions", Default = true, Size = UDim2.fromScale(1, 0.11)}):changed(function(value)
 	UI:configure({Animation = value})
 end)
-
-UI:checkbox(controlPanel, {
-	Text = "Show tooltips",
-	Default = true,
-	Size = UDim2.fromScale(0.92, 0.11),
-	Position = UDim2.fromScale(0.04, 0.22),
-})
-
-UI:slider(controlPanel, {
-	Text = "Animation speed",
-	Min = 0.05,
-	Max = 0.4,
-	Default = 0.16,
-	Size = UDim2.fromScale(0.92, 0.12),
-	Position = UDim2.fromScale(0.04, 0.37),
-}):format(function(value)
+UI:slider(leftStack, {Text = "Animation speed", Min = 0.05, Max = 0.35, Default = 0.16, Size = UDim2.fromScale(1, 0.14)}):format(function(value)
 	return string.format("%.2fs", value)
 end):changed(function(value)
 	UI:configure({AnimationSpeed = value})
 end)
+UI:createText(leftStack, "Behavior", {Size = UDim2.fromScale(1, 0.1), TextSize = 13, Font = Enum.Font.GothamMedium})
+UI:checkbox(leftStack, {Text = "Show tooltips", Default = true, Size = UDim2.fromScale(1, 0.11)})
+UI:checkbox(leftStack, {Text = "Use responsive scaling", Default = true, Size = UDim2.fromScale(1, 0.11)})
 
-UI:dropdown(controlPanel, {
-	Text = "Density",
-	Items = {"Comfortable", "Compact", "Spacious"},
-	Default = "Comfortable",
-	Size = UDim2.fromScale(0.92, 0.12),
-	Position = UDim2.fromScale(0.04, 0.52),
-}):changed(function(value)
+local controlRight = UI:card(controlColumns, {
+	Size = UDim2.fromScale(0.492, 1),
+	Color = "Surface",
+	Radius = 11,
+	StrokeTransparency = 0.6,
+})
+
+local rightStack = UI:createContainer(controlRight, {
+	Size = UDim2.fromScale(0.88, 0.9),
+	Position = UDim2.fromScale(0.06, 0.05),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {Padding = UDim.new(0.018, 0)},
+})
+
+UI:createText(rightStack, "Appearance", {Size = UDim2.fromScale(1, 0.1), TextSize = 13, Font = Enum.Font.GothamMedium})
+UI:dropdown(rightStack, {Text = "Density", Items = {"Compact", "Comfortable", "Spacious"}, Default = "Comfortable", Size = UDim2.fromScale(1, 0.12)}):changed(function(value)
 	UI:configure({Density = value})
 end)
+UI:segmented(rightStack, {Items = {"Soft", "Sharp", "Glass"}, Default = "Soft", Size = UDim2.fromScale(1, 0.12)}):changed(function(value)
+	UI:configure({Style = value})
+end)
+UI:createText(rightStack, "Feedback", {Size = UDim2.fromScale(1, 0.1), TextSize = 13, Font = Enum.Font.GothamMedium})
+UI:progress(rightStack, {Text = "Framework coverage", Default = 0.88, Size = UDim2.fromScale(1, 0.12)})
+UI:button(rightStack, {Text = "Show confirmation", Color = "SurfaceAlt", Size = UDim2.fromScale(1, 0.11), OnClick = function()
+	UI:confirm({
+		Title = "Example confirmation",
+		Text = "This dialog is part of the same component system.",
+		OnConfirm = function()
+			UI:notify({Title = "Confirmed", Text = "The action was accepted.", Type = "Success"})
+		end,
+	})
+end})
 
-local themes = page("Themes")
-UI:createText(themes, "Themes", {
-	Size = UDim2.fromScale(0.9, 0.07),
-	Position = UDim2.fromScale(0.03, 0.025),
-	TextSize = 21,
-	Font = Enum.Font.GothamBold,
-})
-UI:createText(themes, "Switch between built-in palettes or register your own theme in code.", {
-	Size = UDim2.fromScale(0.9, 0.045),
-	Position = UDim2.fromScale(0.03, 0.092),
-	TextSize = 10,
-	Color = "Subtext",
+heading(themes, "Themes", "Four dark palettes are included, and custom themes can be registered at runtime.")
+
+local themeList = UI:createContainer(themes, {
+	Size = UDim2.fromScale(1, 0.52),
+	Color = "Background",
+	Radius = 0,
+	Layout = {Padding = UDim.new(0.018, 0)},
 })
 
-local themePanel = UI:card(themes, {
-	Size = UDim2.fromScale(0.94, 0.64),
-	Position = UDim2.fromScale(0.03, 0.17),
-	Color = "Surface",
-	Radius = 12,
-})
+for _, name in ipairs({"Obsidian", "Midnight", "Carbon", "Violet"}) do
+	local row = UI:createFrame(themeList, {
+		Size = UDim2.fromScale(1, 0.19),
+		Color = "Surface",
+		Radius = 9,
+		Stroke = true,
+		StrokeColor = "BorderSoft",
+		StrokeTransparency = 0.45,
+	})
 
-local themeNames = {"Obsidian", "Midnight", "Carbon", "Violet"}
-for index, name in ipairs(themeNames) do
-	UI:button(themePanel, {
-		Text = name,
+	UI:createText(row, name, {Size = UDim2.fromScale(0.5, 1), Position = UDim2.fromScale(0.04, 0), TextSize = 11, Font = Enum.Font.GothamMedium})
+	UI:createText(row, "Built-in palette", {Size = UDim2.fromScale(0.22, 1), Position = UDim2.fromScale(0.54, 0), TextSize = 8, Color = "Muted", TextXAlignment = Enum.TextXAlignment.Right})
+
+	UI:button(row, {
+		Text = "Use",
 		Color = name == "Obsidian" and "Accent" or "SurfaceAlt",
-		Size = UDim2.fromScale(0.42, 0.12),
-		Position = UDim2.fromScale(0.05 + ((index - 1) % 2) * 0.47, 0.08 + math.floor((index - 1) / 2) * 0.17),
+		Size = UDim2.fromScale(0.14, 0.62),
+		Position = UDim2.fromScale(0.81, 0.19),
 		OnClick = function()
 			UI:setTheme(name)
-			UI:notify({
-				Title = "Theme changed",
-				Text = name .. " is now active.",
-				Type = "Info",
-			})
+			UI:notify({Title = "Theme changed", Text = name .. " is now active.", Type = "Info"})
 		end,
 	})
 end
 
-local components = page("Components")
-UI:createText(components, "Components", {
-	Size = UDim2.fromScale(0.9, 0.07),
-	Position = UDim2.fromScale(0.03, 0.025),
-	TextSize = 21,
-	Font = Enum.Font.GothamBold,
-})
-UI:createText(components, "StarGaze keeps common controls consistent across a project.", {
-	Size = UDim2.fromScale(0.9, 0.045),
-	Position = UDim2.fromScale(0.03, 0.092),
-	TextSize = 10,
-	Color = "Subtext",
-})
+local stylePreview = UI:card(themes, {Size = UDim2.fromScale(1, 0.26), Color = "Surface", Radius = 11, StrokeTransparency = 0.6})
+UI:createText(stylePreview, "Style presets", {Size = UDim2.fromScale(0.9, 0.18), Position = UDim2.fromScale(0.04, 0.08), TextSize = 13, Font = Enum.Font.GothamMedium})
+UI:createText(stylePreview, "Soft, Sharp, Glass and Dense styles can be registered or replaced for a project.", {Size = UDim2.fromScale(0.9, 0.28), Position = UDim2.fromScale(0.04, 0.31), TextSize = 9, Color = "Subtext", TextWrapped = true})
+UI:segmented(stylePreview, {Items = {"Soft", "Sharp", "Glass", "Dense"}, Default = "Soft", Size = UDim2.fromScale(0.92, 0.24), Position = UDim2.fromScale(0.04, 0.66)}):changed(function(value)
+	UI:configure({Style = value})
+end)
 
-local componentPanel = UI:card(components, {
-	Size = UDim2.fromScale(0.94, 0.7),
-	Position = UDim2.fromScale(0.03, 0.17),
-	Color = "Surface",
-	Radius = 12,
+heading(components, "Components", "A compact inventory of the controls exposed by the framework.")
+
+local componentList = UI:createContainer(components, {
+	Size = UDim2.fromScale(1, 0.78),
+	Color = "Background",
+	Radius = 0,
+	Layout = {
+		Padding = UDim.new(0.012, 0),
+	},
 })
 
-local componentNames = {
-	"Window", "Button", "Toggle", "Checkbox", "Radio", "Slider",
-	"Progress", "Input", "Dropdown", "Tabs", "Segmented", "Accordion",
-	"Keybind", "ColorPicker", "Notification", "CommandPalette",
-}
-
-for index, name in ipairs(componentNames) do
-	local row = math.floor((index - 1) / 2)
-	local column = (index - 1) % 2
-	local item = UI:createFrame(componentPanel, {
-		Size = UDim2.fromScale(0.42, 0.085),
-		Position = UDim2.fromScale(0.05 + column * 0.47, 0.05 + row * 0.105),
-		Color = "SurfaceAlt",
+for _, name in ipairs({
+	"Window", "Button", "Toggle", "Checkbox", "Radio", "Slider", "Progress", "Input",
+	"Dropdown", "Tabs", "Segmented", "Accordion", "Keybind", "ColorPicker", "Notification",
+	"Confirm", "ContextMenu", "CommandPalette", "Tooltip", "Badge",
+}) do
+	local row = UI:createFrame(componentList, {
+		Size = UDim2.fromScale(1, 0.075),
+		Color = "Surface",
 		Radius = 8,
 	})
-	UI:createText(item, name, {
-		Size = UDim2.fromScale(0.84, 1),
-		Position = UDim2.fromScale(0.08, 0),
-		TextSize = 9,
-	})
+	UI:createText(row, name, {Size = UDim2.fromScale(0.65, 1), Position = UDim2.fromScale(0.04, 0), TextSize = 9, Font = Enum.Font.GothamMedium})
+	UI:createText(row, "Component", {Size = UDim2.fromScale(0.25, 1), Position = UDim2.fromScale(0.71, 0), TextSize = 8, Color = "Muted", TextXAlignment = Enum.TextXAlignment.Right})
 end
 
-local about = page("About")
-UI:createText(about, "About StarGaze", {
-	Size = UDim2.fromScale(0.9, 0.07),
-	Position = UDim2.fromScale(0.03, 0.025),
-	TextSize = 21,
-	Font = Enum.Font.GothamBold,
-})
+heading(about, "About", "StarGaze is designed to be a framework you build with, not a demo you copy.")
 
 local aboutCard = UI:card(about, {
-	Size = UDim2.fromScale(0.94, 0.58),
-	Position = UDim2.fromScale(0.03, 0.16),
+	Size = UDim2.fromScale(1, 0.48),
 	Color = "Surface",
-	Radius = 12,
+	Radius = 11,
+	StrokeTransparency = 0.6,
 })
 
-UI:createText(aboutCard, "A UI framework, not a widget dump.", {
-	Size = UDim2.fromScale(0.84, 0.12),
-	Position = UDim2.fromScale(0.08, 0.1),
-	TextSize = 16,
+local aboutInner = UI:createContainer(aboutCard, {
+	Size = UDim2.fromScale(0.88, 0.82),
+	Position = UDim2.fromScale(0.06, 0.09),
+	Color = "Surface",
+	Radius = 0,
+	Layout = {Padding = UDim.new(0.02, 0)},
+})
+
+UI:createText(aboutInner, "A small runtime, reusable components, and a design system.", {
+	Size = UDim2.fromScale(1, 0.14),
+	TextSize = 15,
 	Font = Enum.Font.GothamMedium,
-})
-
-UI:createText(aboutCard, "StarGaze is built around a small runtime, reusable components, a theme system, styles, templates and plugins. The goal is to make interfaces feel intentionally designed while keeping the implementation approachable.", {
-	Size = UDim2.fromScale(0.84, 0.28),
-	Position = UDim2.fromScale(0.08, 0.27),
-	TextSize = 10,
 	TextWrapped = true,
-	TextYAlignment = Enum.TextYAlignment.Top,
-	Color = "Subtext",
 })
 
-UI:createText(aboutCard, "Built by Starlight Solutions, Inc.", {
-	Size = UDim2.fromScale(0.84, 0.08),
-	Position = UDim2.fromScale(0.08, 0.65),
-	TextSize = 11,
-})
-
-UI:createText(aboutCard, "MIT License · Luau · Roblox", {
-	Size = UDim2.fromScale(0.84, 0.07),
-	Position = UDim2.fromScale(0.08, 0.76),
+UI:createText(aboutInner, "StarGaze keeps the public API straightforward while leaving room for custom themes, styles, templates and plugins. The example intentionally uses restrained spacing and scale-based composition so the framework is shown in a realistic setting.", {
+	Size = UDim2.fromScale(1, 0.3),
 	TextSize = 9,
 	Color = "Subtext",
+	TextWrapped = true,
+	TextYAlignment = Enum.TextYAlignment.Top,
 })
 
-local palette
-palette = UI:commandPalette({
-	Placeholder = "Search StarGaze...",
+UI:divider(aboutInner)
+UI:createText(aboutInner, "Built by Starlight Solutions, Inc.", {Size = UDim2.fromScale(1, 0.1), TextSize = 10, Font = Enum.Font.GothamMedium})
+UI:createText(aboutInner, "Luau · Roblox · MIT License", {Size = UDim2.fromScale(1, 0.1), TextSize = 8, Color = "Muted"})
+
+local palette = UI:commandPalette({
+	Placeholder = "Search StarGaze",
 	Items = {
 		{Name = "Overview", OnClick = function() selectPage("Overview") end},
 		{Name = "Controls", OnClick = function() selectPage("Controls") end},
 		{Name = "Themes", OnClick = function() selectPage("Themes") end},
 		{Name = "Components", OnClick = function() selectPage("Components") end},
 		{Name = "About", OnClick = function() selectPage("About") end},
-		{Name = "Obsidian Theme", OnClick = function() UI:setTheme("Obsidian") end},
-		{Name = "Midnight Theme", OnClick = function() UI:setTheme("Midnight") end},
-		{Name = "Carbon Theme", OnClick = function() UI:setTheme("Carbon") end},
-		{Name = "Violet Theme", OnClick = function() UI:setTheme("Violet") end},
+		{Name = "Obsidian", OnClick = function() UI:setTheme("Obsidian") end},
+		{Name = "Midnight", OnClick = function() UI:setTheme("Midnight") end},
+		{Name = "Carbon", OnClick = function() UI:setTheme("Carbon") end},
+		{Name = "Violet", OnClick = function() UI:setTheme("Violet") end},
 	},
 })
 
-UI:tooltip(navItems.Themes.Button, {
-	Text = "Switch themes and define custom palettes.",
+UI:tooltip(themesButton.Instance, {
+	Text = "Switch palettes and styles.",
+})
+
+UI:tooltip(componentsButton.Instance, {
+	Text = "Browse the available controls.",
 })
 
 selectPage("Overview")
@@ -543,4 +626,5 @@ UI:notify({
 	Title = "StarGaze",
 	Text = "Showcase loaded.",
 	Type = "Success",
+	Duration = 3,
 })
