@@ -1,21 +1,22 @@
-###
-# StarGaze
+## Installation
 
-StarGaze is a modular Luau UI framework designed for Roblox, with reusable components, theming, responsive layouts, presets, and interaction utilities.
+StarGaze can be installed directly into your Roblox experience using the installer below. The installer automatically downloads the framework from the official GitHub repository and recreates the required module structure inside `ReplicatedStorage`.
 
-## Quick Installation
+### Requirements
 
-If you want to install StarGaze directly into your Roblox experience without manually creating each ModuleScript, you can use the installer below.
+Before running the installer:
 
-> **Requirements**
->
-> * Enable **HTTP Requests** in your experience.
-> * The installer requires access to GitHub's raw content servers.
-> * The installer installs StarGaze into `ReplicatedStorage.StarGaze`.
+* Roblox Studio
+* **HTTP Requests** enabled
+* Access to the Roblox Studio **Command Bar**
 
-### Installer
+Enable HTTP requests under:
 
-Run the following script in Roblox Studio's **Command Bar**:
+**Game Settings → Security → Allow HTTP Requests**
+
+### Quick Install
+
+Open the **Command Bar** in Roblox Studio, paste the installer below, and run it.
 
 ```lua
 local HttpService = game:GetService("HttpService")
@@ -198,7 +199,6 @@ for _, path in ipairs(files) do
 	module.Parent = parent
 
 	installed += 1
-
 	log("Installed " .. path)
 end
 
@@ -222,21 +222,24 @@ else
 end
 ```
 
-### What the installer does
+### What the Installer Does
 
-The installer automatically:
+The installer handles the entire setup automatically:
 
-1. Checks whether HTTP requests are enabled.
-2. Downloads the StarGaze source files from the configured GitHub branch.
-3. Creates the required folder structure.
-4. Creates `ReplicatedStorage.StarGaze`.
-5. Installs every StarGaze module into its corresponding location.
-6. Removes an existing StarGaze installation before installing the new version.
-7. Reports successful and failed downloads in the Output window.
+| Step | Action                                       |
+| ---- | -------------------------------------------- |
+| 1    | Verifies that HTTP requests are enabled      |
+| 2    | Connects to the configured GitHub repository |
+| 3    | Removes any existing `StarGaze` installation |
+| 4    | Creates `ReplicatedStorage.StarGaze`         |
+| 5    | Creates the required folder structure        |
+| 6    | Downloads each StarGaze module               |
+| 7    | Installs the downloaded modules              |
+| 8    | Reports successful and failed installations  |
 
-### Resulting structure
+### Installation Structure
 
-After installation, your game will contain:
+After installation, the framework will be organized as follows:
 
 ```text
 ReplicatedStorage
@@ -276,38 +279,18 @@ ReplicatedStorage
     └── StarGaze
 ```
 
-## Using StarGaze
+### Updating
 
-Once installation has completed, require the framework from `ReplicatedStorage`:
+To update StarGaze, simply run the installer again.
 
-```lua
-local StarGaze = require(game.ReplicatedStorage.StarGaze)
+The installer replaces the existing `ReplicatedStorage.StarGaze` installation with the latest version available from the configured branch.
 
-local ui = StarGaze.create({
-	-- configuration
-})
-```
+> [!WARNING]
+> Running the installer removes the existing `StarGaze` instance first. Any modifications made directly to the installed modules will be lost.
 
-The framework exposes the core runtime through `StarGaze.create()`, while themes and presets are available directly through the main module.
+### Troubleshooting
 
-```lua
-local StarGaze = require(game.ReplicatedStorage.StarGaze)
-
-local themes = StarGaze.Themes
-local presets = StarGaze.Presets
-```
-
-## Updating StarGaze
-
-To update an existing installation, run the installer again.
-
-The installer removes the existing `ReplicatedStorage.StarGaze` instance and downloads the current files from the configured GitHub branch.
-
-> **Important:** Any manual changes made directly to the installed StarGaze modules will be lost when the installer is run again.
-
-## Troubleshooting
-
-### HTTP requests are disabled
+#### `HTTP requests are disabled`
 
 Go to:
 
@@ -315,22 +298,21 @@ Go to:
 
 Enable the setting and run the installer again.
 
-### A module failed to download
+#### A module fails to download
 
-Check the Output window for the affected file and URL. A failed download generally indicates that the requested file does not exist at the configured GitHub path or that Roblox could not access the resource.
+Check the **Output** window for the failed file and its corresponding GitHub URL.
 
-### StarGaze already exists
+Common causes include:
 
-This is expected when updating an installation. The installer removes the existing `StarGaze` folder before installing the current version.
+* The file was moved or renamed.
+* The configured branch does not contain the file.
+* The repository path is incorrect.
+* Roblox cannot access the requested resource.
 
-### Installation completed with failures
+#### Installation reports failures
 
-The installer continues downloading the remaining modules even if an individual file fails. Review the Output window to identify the failed files and run the installer again after resolving the underlying issue.
+The installer continues processing the remaining files when an individual download fails. Review the Output window to identify the affected modules, resolve the issue, and run the installer again.
 
-## Version
+### Installed Version
 
-**Current installer version:** `2.0.0`
-
-**Source:** `Starlight-Solutions-Inc/StarGaze`
-
-**Branch:** `main`
+The installer currently installs **StarGaze `2.0.0`** from the `main` branch.
