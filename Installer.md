@@ -1,3 +1,4 @@
+###
 # StarGaze
 
 StarGaze is a modular Luau UI framework designed for Roblox, with reusable components, theming, responsive layouts, presets, and interaction utilities.
