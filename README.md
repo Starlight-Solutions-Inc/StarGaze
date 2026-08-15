@@ -1,121 +1,170 @@
 # StarGaze
 
-**StarGaze** is a modular Roblox UI framework built by **Starlight Solutions, Inc.**
+A modular, modern Roblox UI framework for Luau by **Starlight Solutions, Inc.**
 
-It is intended to make polished Roblox interfaces easier to build without forcing every project into the same layout or visual style. The framework is organized around reusable components, theme tokens, presets, interaction helpers, and a small fluent API.
+StarGaze is built for developers who want polished interfaces without turning every screen into a pile of one-off `Frame`, `TextButton`, and tween code. The framework separates the runtime, theme system, interactions, layout helpers, and UI components so projects can stay maintainable as they grow.
 
 ## Highlights
 
-- Modular Luau architecture
-- Built-in dark themes: Obsidian, Midnight, Carbon, Violet
-- Custom theme registration
-- Cards and glass-style surfaces
-- Interactive buttons with hover and press behavior
-- Toggles
-- Sliders
+- Responsive, scale-first layout API
+- Dark visual presets designed for Roblox interfaces
+- Obsidian, Midnight, Carbon, and Violet themes
+- Runtime theme registration and switching
+- Glass and card surfaces
+- Animated interaction states
+- Buttons with hover and press treatment
+- Toggles and checkboxes
+- Radio-style controls
+- Sliders and progress bars
 - Dropdowns
+- Text inputs
 - Tabs
-- Windows
+- Segmented controls
+- Accordions
+- Keybind controls
+- Color picker palettes
 - Notifications
 - Confirmation dialogs
-- Badges
-- Dividers
+- Context menus
+- Searchable command palette
 - Tooltips
-- Runtime theme switching
+- Badges and dividers
+- Responsive scaling helper
 - Fluent component handles
-- No external dependencies
-- Rojo-compatible project structure
-
-## Project layout
-
-```text
-StarGaze/
-├── src/
-│   └── StarGaze/
-│       ├── Components/
-│       │   ├── Badge.lua
-│       │   ├── Button.lua
-│       │   ├── Confirm.lua
-│       │   ├── Divider.lua
-│       │   ├── Dropdown.lua
-│       │   ├── Notification.lua
-│       │   ├── Slider.lua
-│       │   ├── Tabs.lua
-│       │   ├── Toggle.lua
-│       │   ├── Tooltip.lua
-│       │   └── Window.lua
-│       ├── Elements.lua
-│       ├── Interaction.lua
-│       ├── Presets.lua
-│       ├── Runtime.lua
-│       ├── Themes.lua
-│       ├── Utils.lua
-│       └── init.lua
-├── example/
-│   └── Example.client.lua
-├── default.project.json
-├── LICENSE
-└── README.md
-```
+- No external runtime dependencies
 
 ## Installation
 
-### Rojo
-
-Clone the repository and build the project with Rojo. `default.project.json` maps the framework into `ReplicatedStorage.StarGaze`.
-
-### Manual Roblox Studio installation
-
-Place the `StarGaze` folder from `src` into `ReplicatedStorage`.
-
-## Quick start
+The public API is intentionally simple:
 
 ```lua
 local StarGaze = require(game.ReplicatedStorage.StarGaze)
 
-local UI = StarGaze.new({
+local UI = StarGaze.create({
+    Theme = "Obsidian",
+})
+```
+
+The repository includes a `default.project.json` for Rojo and a Studio installer under `tools/`.
+
+## Example
+
+```lua
+local StarGaze = require(game.ReplicatedStorage.StarGaze)
+
+local UI = StarGaze.create({
     Theme = "Obsidian",
 })
 
 local window = UI:window({
-    Title = "My Interface",
-    Subtitle = "Powered by StarGaze",
-    Size = UDim2.fromOffset(650, 420),
+    Title = "Control Center",
+    Subtitle = "StarGaze",
+    Size = UDim2.fromScale(0.62, 0.68),
 })
 
-local content = UI:createContainer(window.Content, {
-    Size = UDim2.new(1, -24, 1, -24),
-    Position = UDim2.fromOffset(12, 12),
+local page = UI:createContainer(window.Content, {
+    Size = UDim2.fromScale(1, 1),
     Color = "Background",
     Layout = {
         Padding = UDim.new(0, 8),
     },
 })
 
-UI:button(content, {
-    Text = "Click Me",
+UI:button(page, {
+    Text = "Deploy",
+    Color = "Accent",
+    Size = UDim2.fromScale(1, 0.09),
     OnClick = function()
         UI:notify({
-            Title = "StarGaze",
-            Text = "The button was pressed.",
+            Title = "Deployed",
+            Text = "The operation completed successfully.",
             Type = "Success",
         })
     end,
+})
+
+UI:toggle(page, {
+    Text = "Animated effects",
+    Default = true,
+})
+
+UI:slider(page, {
+    Text = "Intensity",
+    Min = 0,
+    Max = 100,
+    Default = 65,
+})
+```
+
+## Responsive layout
+
+StarGaze avoids making the developer manually position every control with screen-specific pixel offsets. Public component defaults use relative `UDim2.fromScale` sizing and positioning, while the framework keeps small internal visual details isolated from layout decisions.
+
+For larger experiences, attach the responsive helper to a root container:
+
+```lua
+UI:responsive(window.Instance, {
+    BaseWidth = 1440,
+    Min = 0.78,
+    Max = 1.08,
 })
 ```
 
 ## Themes
 
-StarGaze ships with four presets:
+Built-in themes:
 
-`Obsidian` · `Midnight` · `Carbon` · `Violet`
+- `Obsidian`
+- `Midnight`
+- `Carbon`
+- `Violet`
 
-Custom themes can be registered through `StarGaze.Themes.register` and selected at runtime with `UI:setTheme`.
+Register your own:
 
-## Design philosophy
+```lua
+StarGaze.Themes.register("Aurora", {
+    Background = Color3.fromRGB(8, 10, 16),
+    Surface = Color3.fromRGB(15, 18, 27),
+    SurfaceAlt = Color3.fromRGB(22, 26, 37),
+    SurfaceRaised = Color3.fromRGB(29, 34, 47),
+    Glass = Color3.fromRGB(19, 23, 34),
+    Border = Color3.fromRGB(48, 60, 83),
+    BorderSoft = Color3.fromRGB(32, 41, 57),
+    Text = Color3.fromRGB(242, 247, 255),
+    Subtext = Color3.fromRGB(146, 159, 181),
+    Muted = Color3.fromRGB(96, 108, 130),
+    Accent = Color3.fromRGB(78, 212, 191),
+    AccentHover = Color3.fromRGB(112, 231, 214),
+    AccentPressed = Color3.fromRGB(47, 174, 156),
+    Success = Color3.fromRGB(77, 215, 140),
+    Warning = Color3.fromRGB(246, 184, 68),
+    Danger = Color3.fromRGB(241, 82, 88),
+    Info = Color3.fromRGB(82, 161, 255),
+})
 
-StarGaze intentionally keeps the component API small while allowing components to expose handles for state changes. This lets a game create its own layout and behavior instead of depending on a large prebuilt UI template.
+UI:setTheme("Aurora")
+```
+
+## Repository layout
+
+```text
+StarGaze/
+├── src/
+│   └── StarGaze/
+│       ├── Components/
+│       ├── Core/
+│       ├── Elements.lua
+│       └── init.lua
+├── example/
+├── docs/
+├── tools/
+├── default.project.json
+├── LICENSE
+└── README.md
+```
 
 ## License
 
-MIT License. See `LICENSE`.
+StarGaze is free and open source under the MIT License.
+
+Copyright (c) 2026 Starlight Solutions, Inc.

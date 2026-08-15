@@ -1,18 +1,107 @@
-local Utils=require(script.Parent.Parent.Utils)
-local Window={}; Window.__index=Window
-function Window.new(runtime,options)
-	options=options or {}; local instance=runtime:card(runtime.Gui,{Name=options.Name or "Window",Size=options.Size or UDim2.fromOffset(620,420),Position=options.Position or UDim2.fromScale(.5,.5),AnchorPoint=Vector2.new(.5,.5),Color=options.Color or "Surface",CornerRadius=options.CornerRadius or 14,Stroke=options.Stroke~=false,StrokeColor=options.StrokeColor or "Border",ClipsDescendants=true,ZIndex=options.ZIndex or 5})
-	local topbar=runtime:createFrame(instance,{Name="Topbar",Size=UDim2.new(1,0,0,54),Color=options.TopbarColor or "SurfaceAlt",CornerRadius=0,ZIndex=6})
-	local title=runtime:createText(topbar,options.Title or "StarGaze",{Size=UDim2.new(1,-120,1,0),Position=UDim2.fromOffset(18,0),TextSize=options.TitleSize or 16})
+local Utils = require(script.Parent.Parent.Core.Utils)
+
+local Window = {}
+Window.__index = Window
+
+function Window.new(runtime, options)
+	options = options or {}
+	local root = runtime:glass(runtime.Gui, {
+		Name = options.Name or "Window",
+		Size = options.Size or UDim2.fromScale(0.62, 0.68),
+		Position = options.Position or UDim2.fromScale(0.5, 0.5),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Color = options.Color or "Surface",
+		Transparency = options.Transparency or 0,
+		Radius = options.Radius or 16,
+		Stroke = true,
+		StrokeTransparency = 0.3,
+		ClipsDescendants = true,
+		ZIndex = options.ZIndex or 10,
+	})
+
+	local top = runtime:createFrame(root, {
+		Size = UDim2.fromScale(1, 0.11),
+		Color = options.TopbarColor or "SurfaceAlt",
+		Radius = 0,
+		ZIndex = root.ZIndex + 1,
+	})
+
+	local title = runtime:createText(top, options.Title or "StarGaze", {
+		Size = UDim2.fromScale(0.68, 0.52),
+		Position = UDim2.fromScale(0.035, 0.1),
+		TextSize = options.TitleSize or 17,
+		Font = options.TitleFont or runtime.Options.Font,
+	})
+
 	local subtitle
-	if options.Subtitle then subtitle=runtime:createText(topbar,options.Subtitle,{Size=UDim2.new(1,-120,0,16),Position=UDim2.fromOffset(18,29),TextSize=10,Color="Subtext"}) end
-	runtime:button(topbar,{Text="×",Color="Danger",Size=UDim2.fromOffset(34,34),Position=UDim2.new(1,-44,0,10),CornerRadius=9,TextSize=18,OnClick=function() if options.OnClose then options.OnClose() end instance.Visible=false end})
-	local content=runtime:createFrame(instance,{Name="Content",Size=UDim2.new(1,0,1,-54),Position=UDim2.fromOffset(0,54),Color=options.ContentColor or "Background",CornerRadius=0,ZIndex=5}); if options.Padding then Utils.padding(content,options.Padding) end
-	if options.Layout then Utils.create("UIListLayout",{FillDirection=options.Layout.FillDirection or Enum.FillDirection.Vertical,HorizontalAlignment=options.Layout.HorizontalAlignment or Enum.HorizontalAlignment.Left,VerticalAlignment=options.Layout.VerticalAlignment or Enum.VerticalAlignment.Top,Padding=options.Layout.Padding or UDim.new(0,8),SortOrder=Enum.SortOrder.LayoutOrder,Parent=content}) end
-	local self=setmetatable({Runtime=runtime,Instance=instance,Content=content,Title=title,Subtitle=subtitle,OriginalSize=instance.Size},Window); runtime:track(instance); runtime.Windows[options.Name or "Window"]=self; return self
+	if options.Subtitle then
+		subtitle = runtime:createText(top, options.Subtitle, {
+			Size = UDim2.fromScale(0.68, 0.3),
+			Position = UDim2.fromScale(0.035, 0.57),
+			TextSize = options.SubtitleSize or 10,
+			Color = "Subtext",
+		})
+	end
+
+	runtime:button(top, {
+		Text = "×",
+		Color = "Danger",
+		Size = UDim2.fromScale(0.07, 0.63),
+		Position = UDim2.fromScale(0.9, 0.185),
+		Radius = 10,
+		TextSize = 20,
+		ZIndex = top.ZIndex + 2,
+		OnClick = function()
+			root.Visible = false
+			if options.OnClose then options.OnClose() end
+		end,
+	})
+
+	local content = runtime:createFrame(root, {
+		Name = "Content",
+		Size = UDim2.fromScale(0.94, 0.84),
+		Position = UDim2.fromScale(0.03, 0.14),
+		Color = options.ContentColor or "Background",
+		Radius = 12,
+		ClipsDescendants = true,
+	})
+
+	if options.Padding then
+		Utils.padding(content, options.Padding, options.Padding, options.Padding, options.Padding)
+	end
+
+	local self = setmetatable({Runtime = runtime, Instance = root, Content = content, Title = title, Subtitle = subtitle, OriginalSize = root.Size}, Window)
+	runtime.Windows[options.Name or "Window"] = self
+	return self
 end
-function Window:open() self.Instance.Visible=true; self.Instance.Size=UDim2.new(self.OriginalSize.X.Scale,math.floor(self.OriginalSize.X.Offset*.96),self.OriginalSize.Y.Scale,math.floor(self.OriginalSize.Y.Offset*.96)); self.Runtime:animate(self.Instance,{Size=self.OriginalSize},.22,Enum.EasingStyle.Quint); return self end
-function Window:close() self.Instance.Visible=false; return self end
-function Window:toggle() if self.Instance.Visible then return self:close() else return self:open() end end
-function Window:setTitle(value) self.Title.Text=tostring(value); return self end
+
+function Window:open()
+	self.Instance.Visible = true
+	self.Instance.Size = UDim2.fromScale(self.OriginalSize.X.Scale * 0.96, self.OriginalSize.Y.Scale * 0.96)
+	self.Runtime:animate(self.Instance, {Size = self.OriginalSize}, 0.22, Enum.EasingStyle.Quint)
+	return self
+end
+
+function Window:close()
+	self.Instance.Visible = false
+	return self
+end
+
+function Window:toggle()
+	if self.Instance.Visible then return self:close() end
+	return self:open()
+end
+
+function Window:setTitle(value)
+	self.Title.Text = tostring(value)
+	return self
+end
+
+function Window:setSubtitle(value)
+	if self.Subtitle then
+		self.Subtitle.Text = tostring(value)
+	end
+	return self
+end
+
 return Window

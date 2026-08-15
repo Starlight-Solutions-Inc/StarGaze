@@ -12,9 +12,7 @@
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "StarGazeExample": {
-          "$path": "example/Example.client.lua"
-        }
+        "$path": "example"
       }
     }
   }

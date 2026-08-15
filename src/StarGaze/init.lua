@@ -1,15 +1,14 @@
-local Runtime = require(script.Runtime)
-local Themes = require(script.Themes)
-local Presets = require(script.Presets)
+local Runtime = require(script.Core.Runtime)
+local Themes = require(script.Core.Themes)
+local Presets = require(script.Core.Presets)
 
-local StarGaze = {}
-StarGaze.__index = StarGaze
-StarGaze.Version = "1.0.0"
-StarGaze.Author = "Starlight Solutions, Inc."
-StarGaze.Themes = Themes
-StarGaze.Presets = Presets
+local StarGaze = {
+	Version = "2.0.0",
+	Themes = Themes,
+	Presets = Presets,
+}
 
-function StarGaze.new(options)
+function StarGaze.create(options)
 	return Runtime.new(options)
 end
 
